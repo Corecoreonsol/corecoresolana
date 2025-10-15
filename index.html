@@ -3519,9 +3519,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 60px 20px;
+            padding: 80px 20px;
             position: relative;
             z-index: 2;
+            background: linear-gradient(180deg, 
+                rgba(0, 4, 8, 0.95) 0%, 
+                rgba(0, 6, 15, 0.98) 50%, 
+                rgba(0, 4, 8, 0.95) 100%);
         }
         
         .roadmap-content {
@@ -3532,10 +3536,10 @@
         }
         
         .roadmap-title {
-            font-size: clamp(1.5rem, 5vw, 2.2rem);
+            font-size: clamp(2rem, 6vw, 3rem);
             font-weight: 200;
-            margin-bottom: 1rem;
-            letter-spacing: 0.15em;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.2em;
             text-transform: uppercase;
             background: linear-gradient(135deg, var(--core-cyan), var(--core-blue), var(--core-text-blue));
             -webkit-background-clip: text;
@@ -3543,8 +3547,8 @@
             background-clip: text;
             position: relative;
             text-align: center;
-            filter: drop-shadow(0 0 10px var(--core-glow-blue));
-            padding-bottom: 1.5rem;
+            filter: drop-shadow(0 0 15px var(--core-glow-blue));
+            padding-bottom: 1rem;
             opacity: 0;
             transform: translateY(30px);
             transition: all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1),
@@ -3566,9 +3570,9 @@
         }
         
         .roadmap-subtitle {
-            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 4rem;
+            font-size: clamp(0.85rem, 2vw, 1rem);
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 5rem;
             font-weight: 300;
             opacity: 0;
             transform: translateY(20px);
@@ -3583,7 +3587,7 @@
         .roadmap-timeline {
             display: flex;
             flex-direction: column;
-            gap: 3rem;
+            gap: 2rem;
             text-align: left;
         }
         
@@ -3610,24 +3614,24 @@
         }
         
         .phase-number {
-            width: 60px;
-            height: 60px;
-            background: rgba(0, 25, 40, 0.3);
+            width: 70px;
+            height: 70px;
+            background: rgba(0, 20, 35, 0.4);
             backdrop-filter: blur(15px);
-            border: none;
+            border: 1px solid rgba(0, 153, 255, 0.2);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            font-weight: 200;
-            color: #ffffff;
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: var(--core-text-blue);
             letter-spacing: 0.1em;
             position: relative;
             overflow: hidden;
             transition: all 0.4s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1),
-                       0 2px 6px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2),
+                       0 2px 6px rgba(0, 0, 0, 0.1);
         }
         
         .phase-number::before {
@@ -3654,8 +3658,11 @@
         
         .phase-line {
             width: 2px;
-            height: 100px;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+            height: 120px;
+            background: linear-gradient(180deg, 
+                rgba(0, 153, 255, 0.4) 0%, 
+                rgba(0, 153, 255, 0.2) 50%, 
+                rgba(0, 153, 255, 0.1) 100%);
             margin-top: 1rem;
         }
         
@@ -3663,16 +3670,16 @@
         
         .phase-content {
             flex: 1;
-            background: rgba(0, 25, 40, 0.3);
+            background: rgba(0, 15, 25, 0.4);
             backdrop-filter: blur(15px);
-            border: none;
+            border: 1px solid rgba(0, 153, 255, 0.1);
             border-radius: 0;
             padding: 2.5rem;
             transition: all 0.4s ease;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1),
-                       0 2px 6px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2),
+                       0 2px 6px rgba(0, 0, 0, 0.1);
         }
         
         .phase-content::before {
@@ -3698,9 +3705,9 @@
         }
         
         .phase-title {
-            font-size: clamp(1.3rem, 4vw, 1.8rem);
-            font-weight: 300;
-            margin-bottom: 1.5rem;
+            font-size: clamp(1.4rem, 4.5vw, 2rem);
+            font-weight: 400;
+            margin-bottom: 0;
             color: #ffffff;
             letter-spacing: 0.05em;
         }
