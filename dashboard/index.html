@@ -63,6 +63,20 @@
             cursor: default !important;
         }
         
+        /* Hide scrollbar for all browsers */
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            display: none;
+            width: 0;
+            height: 0;
+        }
+        
+        html,
+        body {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        
         /* Desktop only - lock overflow */
         @media (min-width: 1025px) {
             html, body {
@@ -70,7 +84,7 @@
             }
         }
         
-        /* Mobile and tablet - allow scrolling */
+        /* Mobile and tablet - allow scrolling without scrollbar */
         @media (max-width: 1024px) {
             html, body {
                 overflow-y: auto !important;
