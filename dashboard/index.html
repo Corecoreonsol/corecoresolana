@@ -53,16 +53,27 @@
             cursor: grabbing !important;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+        
         html, body {
             height: 100%;
-            overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             cursor: default !important;
         }
         
+        /* Desktop only - lock overflow */
+        @media (min-width: 1025px) {
+            html, body {
+                overflow: hidden;
+            }
+        }
+        
+        /* Mobile and tablet - allow scrolling */
         @media (max-width: 1024px) {
             html, body {
-                overflow-y: auto;
+                overflow-y: auto !important;
                 -webkit-overflow-scrolling: touch;
                 height: auto;
                 min-height: 100%;
@@ -204,10 +215,15 @@
             gap: 0.8rem;
             padding: 0.8rem;
             padding-bottom: 1rem;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+            overflow: hidden;
             min-height: 0;
             height: calc(100vh - 80px);
+        }
+        
+        @media (max-width: 1024px) {
+            .dashboard-container {
+                overflow: visible;
+            }
         }
         
         /* Ukryj scrollbar całkowicie tylko dla dashboard container */
@@ -838,10 +854,16 @@
             }
         }
 
-        /* Tablet optimization - fit everything without scrolling */
+        /* Tablet optimization - enable scrolling */
         @media (max-width: 1024px) {
             html, body {
-                overflow: hidden;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch;
+                height: auto;
+            }
+            
+            body {
+                min-height: 100vh;
             }
             
             .dashboard-container {
@@ -850,19 +872,18 @@
                 gap: 0.8rem;
                 padding: 0.8rem;
                 height: auto;
-                min-height: 100vh;
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
+                min-height: calc(100vh - 80px);
+                overflow: visible;
             }
 
             .pfp-panel {
-                min-height: 0;
-                height: 100%;
+                min-height: 400px;
+                height: auto;
             }
             
             .editor-panel {
-                min-height: 0;
-                height: 100%;
+                min-height: 500px;
+                height: auto;
             }
 
             .editor-canvas-area {
@@ -933,12 +954,22 @@
             .dashboard-container {
                 padding: 0.6rem;
                 gap: 0.8rem;
-                height: calc(100vh - 55px);
-                grid-template-rows: 40% 60%;
+                height: auto;
+                min-height: 100vh;
+                grid-template-rows: auto auto;
+                overflow: visible;
             }
             
-            .pfp-panel, .editor-panel {
+            .pfp-panel {
                 padding: 0.8rem;
+                min-height: 350px;
+                height: auto;
+            }
+            
+            .editor-panel {
+                padding: 0.8rem;
+                min-height: 450px;
+                height: auto;
             }
 
             .editor-canvas-area {
@@ -992,16 +1023,19 @@
                 height: auto;
                 min-height: 100vh;
                 grid-template-rows: auto auto;
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
+                overflow: visible;
             }
             
             .pfp-panel {
                 padding: 0.6rem;
+                min-height: 300px;
+                height: auto;
             }
             
             .editor-panel {
                 padding: 0.6rem;
+                min-height: 400px;
+                height: auto;
             }
             
             .editor-controls {
@@ -1096,8 +1130,17 @@
                 gap: 0.6rem;
                 height: auto;
                 min-height: 100vh;
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
+                overflow: visible;
+            }
+            
+            .pfp-panel {
+                min-height: 280px;
+                height: auto;
+            }
+            
+            .editor-panel {
+                min-height: 380px;
+                height: auto;
             }
             
             .editor-controls {
