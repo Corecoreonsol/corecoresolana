@@ -111,13 +111,14 @@
             backdrop-filter: blur(15px);
             border: none;
             border-bottom: 1px solid rgba(0, 153, 255, 0.2);
-            padding: 0.8rem 1.5rem;
+            padding: 0.6rem 1.2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-shrink: 0;
             position: relative;
             z-index: 100;
+            height: 65px;
         }
 
         .dashboard-logo {
@@ -137,7 +138,7 @@
         }
 
         .dashboard-logo h1 {
-            font-size: 0.9rem;
+            font-size: 1rem;
             color: var(--core-cyan);
             font-weight: 200;
             letter-spacing: 0.15em;
@@ -147,13 +148,13 @@
         }
 
         .back-btn {
-            padding: 12px 28px;
+            padding: 14px 32px;
             background: rgba(0, 25, 40, 0.3);
             border: none;
             color: var(--core-text-blue);
             border-radius: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 200;
             letter-spacing: 0.15em;
             text-transform: uppercase;
@@ -197,24 +198,15 @@
             flex: 1;
             display: grid;
             grid-template-columns: 30% 70%;
-            gap: 1.25rem;
-            padding: 1.25rem;
-            padding-bottom: 2rem;
-            overflow-y: auto;
-            overflow-x: hidden;
+            gap: 0.8rem;
+            padding: 0.8rem;
+            padding-bottom: 1rem;
+            overflow: hidden;
             min-height: 0;
-            -webkit-overflow-scrolling: touch;
+            height: calc(100vh - 80px);
         }
         
-        /* Ukryj scrollbar całkowicie */
-        .dashboard-container::-webkit-scrollbar {
-            display: none;
-        }
-        
-        .dashboard-container {
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE/Edge */
-        }
+        /* Ukryj scrollbar całkowicie tylko dla dashboard container */
 
         /* ===== LEFT PANEL - PFP GENERATOR ===== */
         .pfp-panel {
@@ -222,21 +214,13 @@
             backdrop-filter: blur(15px);
             border: none;
             border-radius: 0;
-            padding: 1.5rem;
+            padding: 1rem;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
-            min-height: 600px;
-            height: auto;
+            height: 100%;
             position: relative;
-            overflow: visible;
-        }
-        
-        @media (max-width: 1024px) {
-            .pfp-panel {
-                overflow: visible;
-                height: auto;
-            }
+            overflow: hidden;
         }
 
         .pfp-panel::before {
@@ -255,10 +239,10 @@
         }
 
         .pfp-title {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: var(--core-cyan);
             text-align: center;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem;
             font-weight: 200;
             letter-spacing: 0.15em;
             text-transform: uppercase;
@@ -267,10 +251,10 @@
         }
 
         .pfp-subtitle {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: rgba(255, 255, 255, 0.7);
             text-align: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             font-weight: 200;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
@@ -284,10 +268,11 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 1.5rem;
+            padding: 1rem;
             cursor: pointer !important;
             transition: all 0.3s ease;
             position: relative;
+            min-height: 200px;
         }
 
         .pfp-upload-area:hover {
@@ -296,24 +281,24 @@
         }
 
         .upload-icon {
-            font-size: 3rem;
+            font-size: 2.5rem;
             color: var(--core-blue);
-            margin-bottom: 1rem;
+            margin-bottom: 0.8rem;
             opacity: 0.6;
         }
 
         .upload-text {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             color: var(--core-text-blue);
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.2rem;
             font-weight: 200;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .upload-hint {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 1rem;
+            margin-bottom: 0.8rem;
             font-weight: 200;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
@@ -362,14 +347,14 @@
 
         .generate-btn {
             width: 100%;
-            padding: 8px 20px;
-            margin-top: 1rem;
+            padding: 10px 20px;
+            margin-top: 0.8rem;
             background: rgba(0, 25, 40, 0.3);
             border: none;
             color: var(--core-text-blue);
             border-radius: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 200;
             letter-spacing: 0.15em;
             text-transform: uppercase;
@@ -415,21 +400,13 @@
             backdrop-filter: blur(15px);
             border: none;
             border-radius: 0;
-            padding: 1.5rem;
+            padding: 1rem;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
-            min-height: 1150px;
-            height: auto;
+            height: 100%;
             position: relative;
-            overflow: visible;
-        }
-        
-        @media (max-width: 1024px) {
-            .editor-panel {
-                overflow: visible;
-                height: auto;
-            }
+            overflow: hidden;
         }
 
         .editor-panel::before {
@@ -448,10 +425,10 @@
         }
 
         .editor-title {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: var(--core-cyan);
             text-align: center;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem;
             font-weight: 200;
             letter-spacing: 0.15em;
             text-transform: uppercase;
@@ -460,26 +437,25 @@
         }
 
         .editor-subtitle {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: rgba(255, 255, 255, 0.7);
             text-align: center;
-            margin-bottom: 1rem;
+            margin-bottom: 0.8rem;
             font-weight: 200;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         .editor-canvas-area {
             width: 100%;
-            height: 720px;
-            min-height: 720px;
-            max-height: 720px;
+            flex: 1;
+            min-height: 280px;
+            max-height: 380px;
             background: rgba(0, 4, 8, 0.5);
             border: 1px solid rgba(0, 153, 255, 0.2);
             border-radius: 0;
             position: relative;
             overflow: hidden;
-            margin-bottom: 1rem;
-            flex-shrink: 0;
+            margin-bottom: 0.8rem;
         }
 
         .canvas-wrapper {
@@ -507,8 +483,8 @@
         }
 
         .editor-upload-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
+            font-size: 3rem;
+            margin-bottom: 0.8rem;
             opacity: 0.6;
         }
 
@@ -526,37 +502,35 @@
         .editor-controls {
             display: flex;
             flex-direction: row;
-            gap: 0.3rem;
+            gap: 0.4rem;
             flex-shrink: 0;
             align-items: stretch;
             width: 100%;
-            height: 300px;
+            height: 160px;
             overflow: hidden;
             margin-top: 0.5rem;
+            border: 1px solid rgba(0, 153, 255, 0.1);
+            background: rgba(0, 4, 8, 0.1);
+            padding: 0.3rem;
         }
 
         .control-group {
             background: rgba(0, 4, 8, 0.3);
             border: 1px solid rgba(0, 153, 255, 0.1);
             border-radius: 0;
-            padding: 0.2rem;
+            padding: 0.3rem;
             position: relative;
             flex: 1;
             min-width: 0;
             height: 100%;
+            max-height: 100%;
             overflow-y: auto;
             overflow-x: hidden;
-        }
-        
-        @media (max-width: 1024px) {
-            .control-group {
-                height: auto;
-                overflow: visible;
-            }
+            margin: 0;
         }
         
         .control-group::-webkit-scrollbar {
-            width: 3px;
+            width: 4px;
         }
         
         .control-group::-webkit-scrollbar-track {
@@ -564,14 +538,18 @@
         }
         
         .control-group::-webkit-scrollbar-thumb {
-            background: rgba(0, 153, 255, 0.4);
-            border-radius: 0;
+            background: rgba(0, 153, 255, 0.5);
+            border-radius: 2px;
+        }
+        
+        .control-group::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 153, 255, 0.7);
         }
 
         .control-group h3 {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             color: var(--core-cyan);
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.4rem;
             text-align: center;
             font-weight: 300;
             letter-spacing: 0.08em;
@@ -586,14 +564,14 @@
 
         .control-button {
             width: 100%;
-            padding: 6px 8px;
-            margin-bottom: 0.25rem;
+            padding: 6px 6px;
+            margin-bottom: 0.2rem;
             background: rgba(0, 25, 40, 0.3);
             color: var(--core-text-blue);
             border: none;
             border-radius: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             font-weight: 300;
             letter-spacing: 0.08em;
             line-height: 1.1;
@@ -649,15 +627,16 @@
         }
 
         .control-slider {
-            margin-top: 0.1rem;
-            margin-bottom: 0.1rem;
+            margin-top: 0.2rem;
+            margin-bottom: 0.2rem;
+            width: 100%;
         }
 
         .slider-label {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 0.25rem;
-            font-size: 0.75rem;
+            margin-bottom: 0.3rem;
+            font-size: 0.55rem;
             color: var(--core-text-blue);
             font-weight: 200;
             line-height: 1;
@@ -667,13 +646,14 @@
 
         .control-slider input[type="range"] {
             width: 100%;
-            height: 2px;
+            height: 3px;
             background: rgba(0, 153, 255, 0.2);
             border-radius: 2px;
             outline: none;
             cursor: pointer !important;
             -webkit-appearance: none;
             appearance: none;
+            margin: 0.2rem 0;
         }
 
         .control-slider input[type="range"]::-webkit-slider-thumb {
@@ -724,8 +704,9 @@
             border: 1px solid rgba(0, 153, 255, 0.3);
             border-radius: 0;
             margin-top: 0;
-            max-height: 150px;
+            max-height: 120px;
             min-width: 120px;
+            max-width: 200px;
             overflow-y: auto;
             z-index: 10000;
             backdrop-filter: blur(15px);
@@ -746,10 +727,10 @@
         }
 
         .core-style-option {
-            padding: 0.3rem 0.4rem;
+            padding: 0.4rem 0.5rem;
             cursor: pointer !important;
             transition: all 0.2s ease;
-            font-size: 0.55rem;
+            font-size: 0.6rem;
             color: var(--core-text-blue);
             font-weight: 200;
             letter-spacing: 0.06em;
@@ -791,66 +772,136 @@
         /* ===== RESPONSIVE ===== */
         @media (max-width: 1400px) {
             .dashboard-container {
-                grid-template-columns: 35% 65%;
-                gap: 1rem;
+                grid-template-columns: 32% 68%;
+                gap: 0.8rem;
+                height: calc(100vh - 75px);
+            }
+            
+            .editor-canvas-area {
+                max-height: 420px;
             }
             
             .editor-controls {
-                grid-template-columns: repeat(2, 1fr);
+                height: 140px;
+                padding: 0.25rem;
+            }
+            
+            .control-group {
+                height: 100%;
+                max-height: 100%;
+                margin: 0;
+                overflow-y: auto;
             }
         }
 
         @media (max-width: 1200px) {
             .dashboard-container {
-                grid-template-columns: 40% 60%;
+                grid-template-columns: 35% 65%;
+                height: calc(100vh - 70px);
             }
             
             .pfp-title, .editor-title {
-                font-size: 0.85rem;
+                font-size: 0.75rem;
             }
             
             .control-button {
                 font-size: 0.6rem;
-                padding: 5px 10px;
+                padding: 6px 8px;
             }
             
             .control-group {
-                padding: 0.4rem;
+                padding: 0.3rem;
+            }
+            
+            .control-group h3 {
+                font-size: 0.6rem;
+            }
+            
+            .editor-canvas-area {
+                max-height: 380px;
+            }
+            
+            .editor-controls {
+                height: 120px;
+                padding: 0.2rem;
+            }
+            
+            .control-group {
+                height: 100%;
+                max-height: 100%;
+                margin: 0;
+                overflow-y: auto;
+            }
+        }
+
+        /* Tablet optimization - fit everything without scrolling */
+        @media (max-width: 1024px) {
+            html, body {
+                overflow: hidden;
+            }
+            
+            .dashboard-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 42% 58%;
+                gap: 0.8rem;
+                padding: 0.8rem;
+                height: calc(100vh - 65px);
+                overflow: hidden;
+            }
+
+            .pfp-panel {
+                min-height: 0;
+                height: 100%;
+            }
+            
+            .editor-panel {
+                min-height: 0;
+                height: 100%;
+            }
+
+            .editor-canvas-area {
+                min-height: 200px;
+                max-height: 280px;
+                flex: 1;
+            }
+
+            .editor-controls {
+                height: 120px;
+                gap: 0.3rem;
+                padding: 0.2rem;
+                overflow: hidden;
+            }
+            
+            .control-group {
+                padding: 0.25rem;
+                height: 100%;
+                max-height: 100%;
+                margin: 0;
+                overflow-y: auto;
+            }
+            
+            .control-button {
+                padding: 6px 4px;
+                font-size: 0.55rem;
+                margin-bottom: 0.25rem;
             }
             
             .control-group h3 {
                 font-size: 0.55rem;
-            }
-        }
-
-        @media (max-width: 1024px) {
-            .dashboard-container {
-                grid-template-columns: 1fr;
-                grid-template-rows: auto auto;
-                gap: 1.5rem;
-                padding: 1rem;
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
-                height: calc(100vh - 60px);
-            }
-
-            .pfp-panel {
-                max-height: none;
-                min-height: 400px;
+                margin-bottom: 0.3rem;
             }
             
-            .editor-panel {
-                min-height: 500px;
-            }
-
-            .editor-controls {
-                height: auto;
-                min-height: 70px;
-                gap: 0.25rem;
+            .pfp-upload-area {
+                min-height: 160px;
             }
             
-            .control-group {
-                padding: 0.2rem;
+            .upload-icon {
+                font-size: 2rem;
+                margin-bottom: 0.6rem;
+            }
+            
+            .editor-upload-icon {
+                font-size: 2.5rem;
             }
         }
 
@@ -864,156 +915,203 @@
             }
             
             .dashboard-logo img {
-                width: 32px;
-                height: 32px;
+                width: 50px;
+                height: 50px;
             }
             
             .back-btn {
-                font-size: 0.6rem;
-                padding: 0.4rem 0.8rem;
+                font-size: 0.7rem;
+                padding: 10px 20px;
             }
 
             .dashboard-container {
-                padding: 1rem 0.75rem 2rem;
-                gap: 1.5rem;
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
+                padding: 0.6rem;
+                gap: 0.8rem;
+                height: calc(100vh - 55px);
+                grid-template-rows: 40% 60%;
             }
             
             .pfp-panel, .editor-panel {
-                margin-bottom: 1rem;
+                padding: 0.8rem;
             }
-            
+
             .editor-canvas-area {
-                min-height: 350px;
+                min-height: 180px;
+                max-height: 240px;
             }
             
-            .pfp-panel, .editor-panel {
-                padding: 1rem;
-            }
-
             .editor-controls {
-                height: 65px;
-                gap: 0.2rem;
+                flex-direction: column;
+                height: auto;
+                min-height: 300px;
+                gap: 0.4rem;
+                padding: 0.25rem;
+            }
+            
+            .control-group {
+                padding: 0.3rem;
+                height: auto;
+                min-height: 60px;
+                max-height: none;
+                margin: 0;
+                overflow-y: visible;
             }
 
-            .core-style-grid {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 0.3rem;
-            }
-            
-            .core-style-icon {
-                font-size: 1.2rem;
-            }
-            
-            .core-style-name {
-                font-size: 0.55rem;
-            }
-            
             .control-button {
-                font-size: 0.7rem;
-                padding: 6px 16px;
+                font-size: 0.5rem;
+                padding: 5px 3px;
             }
             
             .control-group h3 {
-                font-size: 0.65rem;
+                font-size: 0.5rem;
+            }
+            
+            .pfp-upload-area {
+                min-height: 120px;
+            }
+            
+            .upload-icon {
+                font-size: 1.8rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .editor-upload-icon {
+                font-size: 2rem;
             }
         }
 
         @media (max-width: 640px) {
+            .dashboard-container {
+                padding: 0.5rem;
+                height: calc(100vh - 50px);
+                grid-template-rows: 35% 65%;
+            }
+            
             .pfp-panel {
-                max-height: 50vh;
+                padding: 0.6rem;
+            }
+            
+            .editor-panel {
+                padding: 0.6rem;
             }
             
             .editor-controls {
-                height: auto;
-                min-height: 60px;
-                gap: 0.5rem;
                 flex-direction: column;
-                padding: 0.5rem 0;
+                height: auto;
+                min-height: 320px;
+                gap: 0.35rem;
+                padding: 0.2rem;
             }
             
             .control-group {
-                padding: 0.75rem;
-                margin-bottom: 0;
-                width: 100%;
-                flex: none;
+                padding: 0.25rem;
                 height: auto;
+                min-height: 55px;
+                max-height: none;
+                flex: none;
+                margin: 0;
+                overflow-y: visible;
             }
             
-            /* Kolejność wyświetlania kontrolek w mobile */
-            .control-group:nth-of-type(1) { order: 1; } /* MEDIA */
-            .control-group:nth-of-type(2) { order: 2; } /* LOGO */
-            .control-group:nth-of-type(3) { order: 3; } /* STYLE */
-            .control-group:nth-of-type(4) { order: 4; } /* EXPORT */
-            
-            /* Umożliwienie scrollowania całego dashboardu */
-            .dashboard-container {
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
-                height: 100vh;
-                padding-bottom: 2rem;
-            }
-            
-            /* Odstępy między sekcjami */
-            .pfp-panel, .editor-panel {
-                margin-bottom: 1.5rem;
-            }
-            
-            .editor-canvas-area {
-                min-height: 300px;
-                margin-bottom: 1rem;
-            }
-            
-            .upload-icon {
-                font-size: 2.5rem;
-            }
-            
-            .editor-upload-icon {
-                font-size: 3rem;
-            }
-            
-            /* Lepsze style dla przycisków w mobile */
             .control-button {
-                padding: 10px 16px;
-                font-size: 0.8rem;
-                margin-bottom: 0.4rem;
+                padding: 4px 2px;
+                font-size: 0.45rem;
+                margin-bottom: 0.2rem;
             }
             
             .control-group h3 {
-                font-size: 0.75rem;
-                margin-bottom: 0.5rem;
+                font-size: 0.45rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            .editor-canvas-area {
+                min-height: 150px;
+                max-height: 200px;
+            }
+            
+            .pfp-upload-area {
+                min-height: 100px;
+                padding: 0.6rem;
+            }
+            
+            .upload-icon {
+                font-size: 1.5rem;
+                margin-bottom: 0.4rem;
+            }
+            
+            .upload-text {
+                font-size: 0.65rem;
+            }
+            
+            .upload-hint {
+                font-size: 0.55rem;
+                margin-bottom: 0.6rem;
+            }
+            
+            .upload-button {
+                font-size: 0.6rem;
+                padding: 6px 12px;
+            }
+            
+            .generate-btn {
+                font-size: 0.6rem;
+                padding: 8px 16px;
             }
         }
 
         @media (max-width: 480px) {
+            .dashboard-logo img {
+                width: 40px;
+                height: 40px;
+            }
+            
             .dashboard-logo h1 {
                 display: none;
             }
             
             .back-btn {
-                font-size: 0.55rem;
+                font-size: 0.65rem;
+                padding: 8px 16px;
             }
             
             .pfp-title, .editor-title {
-                font-size: 0.75rem;
+                font-size: 0.65rem;
             }
             
             .pfp-subtitle, .editor-subtitle {
-                font-size: 0.55rem;
-            }
-            
-            .core-style-grid {
-                grid-template-columns: repeat(2, 1fr);
+                font-size: 0.5rem;
             }
             
             .dashboard-container {
-                padding: 0.75rem 0.5rem 2.5rem;
-                gap: 2rem;
+                padding: 0.4rem;
+                gap: 0.6rem;
+                height: calc(100vh - 45px);
             }
             
-            .pfp-panel, .editor-panel {
-                margin-bottom: 2rem;
+            .editor-controls {
+                flex-direction: column;
+                height: auto;
+                min-height: 340px;
+                padding: 0.2rem;
+                gap: 0.3rem;
+            }
+            
+            .control-group {
+                height: auto;
+                min-height: 50px;
+                max-height: none;
+                flex: none;
+                margin: 0;
+                overflow-y: visible;
+            }
+            
+            .control-button {
+                font-size: 0.4rem;
+                padding: 3px 2px;
+            }
+            
+            .control-group h3 {
+                font-size: 0.4rem;
             }
         }
     </style>
@@ -1443,23 +1541,31 @@
                 this.removeLogoBtn.addEventListener('click', () => this.removeLogo());
                 this.centerLogoBtn.addEventListener('click', () => this.centerLogo());
                 
-                // Sliders
-                this.logoSizeSlider.addEventListener('input', (e) => {
-                    this.logoSizeValue.textContent = e.target.value;
-                    if (this.logo) {
-                        this.logo.width = parseInt(e.target.value);
-                        this.logo.height = parseInt(e.target.value);
-                        this.render();
-                    }
-                });
+                // Sliders - dodaj sprawdzenie czy elementy istnieją
+                if (this.logoSizeSlider && this.logoSizeValue) {
+                    this.logoSizeSlider.addEventListener('input', (e) => {
+                        this.logoSizeValue.textContent = e.target.value;
+                        if (this.logo) {
+                            this.logo.width = parseInt(e.target.value);
+                            this.logo.height = parseInt(e.target.value);
+                            this.render();
+                        }
+                    });
+                } else {
+                    console.error('Logo size slider or value element not found');
+                }
                 
-                this.logoOpacitySlider.addEventListener('input', (e) => {
-                    this.logoOpacityValue.textContent = e.target.value + '%';
-                    if (this.logo) {
-                        this.logo.opacity = parseInt(e.target.value) / 100;
-                        this.render();
-                    }
-                });
+                if (this.logoOpacitySlider && this.logoOpacityValue) {
+                    this.logoOpacitySlider.addEventListener('input', (e) => {
+                        this.logoOpacityValue.textContent = e.target.value + '%';
+                        if (this.logo) {
+                            this.logo.opacity = parseInt(e.target.value) / 100;
+                            this.render();
+                        }
+                    });
+                } else {
+                    console.error('Logo opacity slider or value element not found');
+                }
                 
                 // Export
                 this.exportBtn.addEventListener('click', () => this.exportCanvas());
@@ -1949,6 +2055,16 @@
                     };
                     this.centerLogo();
                     
+                    // Synchronizuj suwaki z wartościami logo
+                    if (this.logoSizeSlider && this.logoSizeValue) {
+                        this.logoSizeSlider.value = logoWidth;
+                        this.logoSizeValue.textContent = logoWidth;
+                    }
+                    if (this.logoOpacitySlider && this.logoOpacityValue) {
+                        this.logoOpacitySlider.value = 100;
+                        this.logoOpacityValue.textContent = '100%';
+                    }
+                    
                     this.removeLogoBtn.style.display = 'block';
                     this.centerLogoBtn.style.display = 'block';
                     this.logoSizeControl.style.display = 'block';
@@ -2097,8 +2213,18 @@
             }
         }
         
-        // Initialize Core Editor
-        const coreEditor = new CoreEditor();
+        // Initialize Core Editor when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            const coreEditor = new CoreEditor();
+        });
+        
+        // Fallback - jeśli DOMContentLoaded już się wykonał
+        if (document.readyState === 'loading') {
+            // DOM wciąż się ładuje, będziemy czekać na event
+        } else {
+            // DOM już załadowany
+            const coreEditor = new CoreEditor();
+        }
     </script>
 </body>
 </html>

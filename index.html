@@ -230,8 +230,8 @@
                        0 0 35px var(--core-blue);
         }
         
-        /* Hide custom cursor on mobile */
-        @media (max-width: 768px) {
+        /* Hide custom cursor on mobile and touch devices */
+        @media (max-width: 768px), (hover: none) and (pointer: coarse) {
             .custom-cursor {
                 display: none !important;
             }
@@ -2806,11 +2806,12 @@
             filter: drop-shadow(0 0 8px var(--core-glow-blue));
             transition: all 0.3s ease;
             flex-shrink: 0;
+            transform: translateY(2px);
         }
         
         .core-type-item:hover .core-type-logo {
             filter: drop-shadow(0 0 15px var(--core-cyan));
-            transform: scale(1.1);
+            transform: translateY(2px) scale(1.1);
         }
         
         @media (max-width: 768px) {
@@ -4521,6 +4522,35 @@
         }
         
         /* Responsive */
+        /* iPad / Tablet (769px-1024px) */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            /* Wyłącz custom cursor dla iPad */
+            .custom-cursor {
+                display: none !important;
+            }
+            
+            body {
+                cursor: auto !important;
+            }
+            
+            /* Większe przyciski dla iPad */
+            .header-buy-now {
+                font-size: 1.1rem;
+                padding: 14px 36px;
+                min-width: 160px;
+            }
+            
+            .header-icon-btn {
+                width: 56px;
+                height: 56px;
+            }
+            
+            .header-icon-btn svg {
+                width: 26px;
+                height: 26px;
+            }
+        }
+        
         @media (max-width: 768px) {
             .core-logo {
                 max-width: 450px; /* WIĘKSZE - było 380px */
@@ -4593,7 +4623,7 @@
             }
             
             .header-actions {
-                bottom: clamp(50px, 6vh, 80px); /* Zwiększone z 12px-25px - wyżej */
+                bottom: clamp(80px, 10vh, 120px); /* WYŻEJ dla małych telefonów */
             }
             
             .header-buy-now {
@@ -4620,7 +4650,7 @@
             }
             
             .header-actions {
-                bottom: clamp(65px, 8.5vh, 95px); /* Zwiększone z 18px-40px - wyżej */
+                bottom: clamp(95px, 12vh, 130px); /* WYŻEJ dla średnich i dużych telefonów */
             }
             
             .header-buy-now {
@@ -5819,122 +5849,122 @@
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=cottage%20core" target="_blank" rel="noopener" class="core-type-name">Cottage</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=weird%20core" target="_blank" rel="noopener" class="core-type-name">Weird</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=dream%20core" target="_blank" rel="noopener" class="core-type-name">Dream</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=cyber%20core" target="_blank" rel="noopener" class="core-type-name">Cyber</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=y2k%20core" target="_blank" rel="noopener" class="core-type-name">Y2K</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=anime%20core" target="_blank" rel="noopener" class="core-type-name">Anime</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=dark%20academia" target="_blank" rel="noopener" class="core-type-name">Dark Academia</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=light%20academia" target="_blank" rel="noopener" class="core-type-name">Light Academia</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=barbie%20core" target="_blank" rel="noopener" class="core-type-name">Barbie</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=frutiger%20aero" target="_blank" rel="noopener" class="core-type-name">Frutiger Aero</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://infiniteaura.com/" target="_blank" rel="noopener" class="core-type-name aura-type">aura</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=grunge%20core" target="_blank" rel="noopener" class="core-type-name">Grunge</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=fairy%20core" target="_blank" rel="noopener" class="core-type-name">Fairy</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=goblin%20core" target="_blank" rel="noopener" class="core-type-name">Goblin</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=vaporwave" target="_blank" rel="noopener" class="core-type-name">Vaporwave</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=clown%20core" target="_blank" rel="noopener" class="core-type-name">Clown</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=love%20core" target="_blank" rel="noopener" class="core-type-name">Love</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=hardstyle%20rave" target="_blank" rel="noopener" class="core-type-name">Hardstyle / Rave</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=pixel%20core" target="_blank" rel="noopener" class="core-type-name">Pixel</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=indie%20core" target="_blank" rel="noopener" class="core-type-name">Indie</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=techwear" target="_blank" rel="noopener" class="core-type-name">Techwear</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=goth%20core" target="_blank" rel="noopener" class="core-type-name">Goth</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=royal%20core" target="_blank" rel="noopener" class="core-type-name">Royal</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
                 <div class="core-type-item">
                     <a href="https://www.tiktok.com/search?q=barbie%20core" target="_blank" rel="noopener" class="core-type-name">Barbie</a>
                     <span class="core-type-separator">-</span>
-                    <img src="corelogo.svg" alt="CORE" class="core-type-logo">
+                    <img src="corelogo-2.svg" alt="CORE" class="core-type-logo">
                 </div>
             </div>
             
