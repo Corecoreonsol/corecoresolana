@@ -781,16 +781,52 @@
             border-bottom: none;
         }
 
+        /* Default colors for raptorcore and auracore */
+        .core-style-option[data-style="raptorcore"] {
+            color: #ff8c00;
+            border-bottom: 1px solid rgba(255, 140, 0, 0.1);
+        }
+
+        .core-style-option[data-style="auracore"] {
+            color: #00ff7f;
+            border-bottom: 1px solid rgba(0, 255, 127, 0.1);
+        }
+
         .core-style-option:hover {
             background: rgba(0, 153, 255, 0.15);
             color: var(--core-cyan);
             text-shadow: 0 0 10px var(--core-cyan);
         }
 
+        /* Specific hover colors for raptorcore and auracore */
+        .core-style-option[data-style="raptorcore"]:hover {
+            background: rgba(255, 140, 0, 0.15);
+            color: #ff8c00;
+            text-shadow: 0 0 10px #ff8c00;
+        }
+
+        .core-style-option[data-style="auracore"]:hover {
+            background: rgba(0, 255, 127, 0.15);
+            color: #00ff7f;
+            text-shadow: 0 0 10px #00ff7f;
+        }
+
         .core-style-option.selected {
             background: rgba(0, 153, 255, 0.25);
             color: var(--core-cyan);
             border-left: 2px solid var(--core-cyan);
+        }
+
+        .core-style-option[data-style="raptorcore"].selected {
+            background: rgba(255, 140, 0, 0.25);
+            color: #ff8c00;
+            border-left: 2px solid #ff8c00;
+        }
+
+        .core-style-option[data-style="auracore"].selected {
+            background: rgba(0, 255, 127, 0.25);
+            color: #00ff7f;
+            border-left: 2px solid #00ff7f;
         }
 
         .core-style-card.selected .core-style-name {
@@ -1270,12 +1306,14 @@
                 
                 <!-- Core Style Selection -->
                 <div class="control-group" id="coreStyleControls">
-                    <h3>🎨 STYLE</h3>
+                    <h3>🎨 Choose Your Core</h3>
                     <button class="control-button style-toggle-btn" id="styleToggleBtn" disabled>
                         <span id="selectedStyleName">Select Style</span>
                         <span class="toggle-arrow">▼</span>
                     </button>
                     <div class="core-style-dropdown" id="styleDropdown" style="display: none;">
+                        <div class="core-style-option" data-style="raptorcore">RAPTORCORE</div>
+                        <div class="core-style-option" data-style="auracore">AURACORE</div>
                         <div class="core-style-option" data-style="cybercore">CYBERCORE</div>
                         <div class="core-style-option" data-style="dreamcore">DREAMCORE</div>
                         <div class="core-style-option" data-style="weirdcore">WEIRDCORE</div>
@@ -1290,9 +1328,7 @@
                         <div class="core-style-option" data-style="ravecore">RAVECORE</div>
                         <div class="core-style-option" data-style="pixelcore">PIXELCORE</div>
                         <div class="core-style-option" data-style="alonecore">ALONECORE</div>
-                        <div class="core-style-option" data-style="raptorcore">RAPTORCORE</div>
                         <div class="core-style-option" data-style="clowncore">CLOWNCORE</div>
-                        <div class="core-style-option" data-style="auracore">AURACORE</div>
                         <div class="core-style-option" data-style="spacecore">SPACECORE</div>
                         <div class="core-style-option" data-style="catcore">CATCORE</div>
                         <div class="core-style-option" data-style="dogcore">DOGCORE</div>
