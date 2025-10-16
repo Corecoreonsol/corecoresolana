@@ -914,6 +914,7 @@
             
             body {
                 min-height: 100vh;
+                padding-bottom: 50vh; /* Extra space for scrolling */
             }
             
             .dashboard-container {
@@ -924,6 +925,7 @@
                 height: auto;
                 min-height: calc(100vh - 80px);
                 overflow: visible;
+                padding-bottom: 40vh; /* Extra scrolling space */
             }
 
             .pfp-panel {
@@ -934,6 +936,7 @@
             .editor-panel {
                 min-height: 500px;
                 height: auto;
+                margin-bottom: 20vh; /* Extra space after editor panel */
             }
 
             .editor-canvas-area {
@@ -1001,6 +1004,10 @@
                 padding: 10px 20px;
             }
 
+            body {
+                padding-bottom: 60vh; /* More scroll space on mobile */
+            }
+
             .dashboard-container {
                 padding: 0.6rem;
                 gap: 0.8rem;
@@ -1008,6 +1015,7 @@
                 min-height: 100vh;
                 grid-template-rows: auto auto;
                 overflow: visible;
+                padding-bottom: 50vh; /* Extra scrolling space */
             }
             
             .pfp-panel {
@@ -1018,27 +1026,29 @@
             
             .editor-panel {
                 padding: 0.8rem;
-                min-height: 450px;
+                min-height: 700px; /* Increased from 450px to fit all controls */
                 height: auto;
             }
 
             .editor-canvas-area {
-                min-height: 180px;
-                max-height: 240px;
+                min-height: 250px; /* Increased from 180px */
+                max-height: 320px; /* Increased from 240px */
+                flex-shrink: 0;
             }
             
             .editor-controls {
                 flex-direction: column;
                 height: auto;
-                min-height: 300px;
+                min-height: 500px; /* Increased from 300px */
                 gap: 0.4rem;
                 padding: 0.25rem;
+                overflow-y: visible;
             }
             
             .control-group {
                 padding: 0.3rem;
                 height: auto;
-                min-height: 60px;
+                min-height: 80px; /* Increased from 60px */
                 max-height: none;
                 margin: 0;
                 overflow-y: visible;
@@ -1068,12 +1078,17 @@
         }
 
         @media (max-width: 640px) {
+            body {
+                padding-bottom: 70vh; /* Even more scroll space */
+            }
+
             .dashboard-container {
                 padding: 0.5rem;
                 height: auto;
                 min-height: 100vh;
                 grid-template-rows: auto auto;
                 overflow: visible;
+                padding-bottom: 60vh; /* Extra scrolling space */
             }
             
             .pfp-panel {
@@ -1084,22 +1099,23 @@
             
             .editor-panel {
                 padding: 0.6rem;
-                min-height: 400px;
+                min-height: 650px; /* Increased from 400px */
                 height: auto;
             }
             
             .editor-controls {
                 flex-direction: column;
                 height: auto;
-                min-height: 320px;
+                min-height: 450px; /* Increased from 320px */
                 gap: 0.35rem;
                 padding: 0.2rem;
+                overflow-y: visible;
             }
             
             .control-group {
                 padding: 0.25rem;
                 height: auto;
-                min-height: 55px;
+                min-height: 70px; /* Increased from 55px */
                 max-height: none;
                 flex: none;
                 margin: 0;
@@ -1118,8 +1134,8 @@
             }
             
             .editor-canvas-area {
-                min-height: 150px;
-                max-height: 200px;
+                min-height: 200px; /* Increased from 150px */
+                max-height: 280px; /* Increased from 200px */
             }
             
             .pfp-upload-area {
@@ -1174,36 +1190,45 @@
             .pfp-subtitle, .editor-subtitle {
                 font-size: 0.5rem;
             }
-            
+
+            body {
+                padding-bottom: 80vh; /* Maximum scroll space for small screens */
+            }
+
             .dashboard-container {
                 padding: 0.4rem;
                 gap: 0.6rem;
                 height: auto;
                 min-height: 100vh;
                 overflow: visible;
-            }
-            
-            .pfp-panel {
+                padding-bottom: 70vh; /* Extra scrolling space */
+            }            .pfp-panel {
                 min-height: 280px;
                 height: auto;
             }
             
             .editor-panel {
-                min-height: 380px;
+                min-height: 750px; /* Increased from 380px */
                 height: auto;
+            }
+
+            .editor-canvas-area {
+                min-height: 220px; /* Added for 480px */
+                max-height: 300px; /* Added for 480px */
             }
             
             .editor-controls {
                 flex-direction: column;
                 height: auto;
-                min-height: 340px;
+                min-height: 500px; /* Increased from 340px */
                 padding: 0.2rem;
                 gap: 0.3rem;
+                overflow-y: visible;
             }
             
             .control-group {
                 height: auto;
-                min-height: 50px;
+                min-height: 75px; /* Increased from 50px */
                 max-height: none;
                 flex: none;
                 margin: 0;
