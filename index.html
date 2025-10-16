@@ -3913,6 +3913,11 @@
             margin-bottom: 0;
             opacity: 0.9;
             transition: all 0.4s ease;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
+            -ms-interpolation-mode: nearest-neighbor;
+            filter: contrast(1.1) saturate(1.05);
         }
         
         .footer-logo-img:hover {
@@ -4616,6 +4621,11 @@
                 backface-visibility: hidden;
                 -webkit-backface-visibility: hidden;
                 pointer-events: none; /* Wyłącz hover na mobile */
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: crisp-edges;
+                image-rendering: pixelated;
+                -ms-interpolation-mode: nearest-neighbor;
+                filter: contrast(1.1) saturate(1.05);
             }
             
             /* Disable logo hover effect on mobile */
@@ -5052,12 +5062,11 @@
                     <div class="nav-links">
                         <a href="#about" class="nav-link">About</a>
                         <a href="#stats" class="nav-link">Stats</a>
-                        <a href="#movement" class="nav-link">Movement</a>
+                        <a href="dashboard/index.html" class="nav-link" style="background: linear-gradient(135deg, var(--core-blue), var(--core-cyan)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900;">DASHBOARD</a>
                         <a href="#howto" class="nav-link">Buy</a>
                         <a href="#whale" class="nav-link">Whale</a>
                         <a href="#art" class="nav-link">Gallery</a>
                         <a href="#roadmap" class="nav-link">Roadmap</a>
-                        <a href="dashboard/index.html" class="nav-link" style="background: linear-gradient(135deg, var(--core-blue), var(--core-cyan)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900;">DASHBOARD</a>
                     </div>
                 </div>
             </div>
@@ -5854,7 +5863,7 @@
         <div class="footer-content">
             <div class="footer-main">
                 <div class="footer-logo">
-                    <img src="corelogo.svg" alt="CORE" class="footer-logo-img">
+                    <img src="corelogo-2.svg" alt="CORE" class="footer-logo-img">
                     <div class="footer-logo-bottom">
                         <button class="back-to-top-button" id="backToTopBtn">
                             ↑↑
