@@ -3500,6 +3500,8 @@
             padding: 80px 20px;
             position: relative;
             z-index: 2;
+            scroll-margin-top: 100px;
+            scroll-snap-align: start;
         }
         
         .roadmap-content {
@@ -8161,6 +8163,54 @@
     </div>
     
     </div> <!-- End of main-content -->
+    
+    <!-- Enhanced Smooth Scroll for Roadmap -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Enhanced smooth scrolling for all anchor links, especially roadmap
+            const smoothScrollLinks = document.querySelectorAll('a[href^="#"]');
+            
+            smoothScrollLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    
+                    if (targetElement) {
+                        // Special handling for roadmap with optimal offset
+                        const offset = targetId === 'roadmap' ? 100 : 80;
+                        
+                        const targetPosition = targetElement.offsetTop - offset;
+                        
+                        window.scrollTo({
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        });
+                        
+                        // Update URL hash
+                        setTimeout(() => {
+                            window.history.pushState(null, null, '#' + targetId);
+                        }, 100);
+                    }
+                });
+            });
+            
+            // Handle direct roadmap hash in URL
+            if (window.location.hash === '#roadmap') {
+                setTimeout(() => {
+                    const roadmapSection = document.getElementById('roadmap');
+                    if (roadmapSection) {
+                        const targetPosition = roadmapSection.offsetTop - 100;
+                        window.scrollTo({
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
+                }, 500);
+            }
+        });
+    </script>
     
     <!-- Mobile Dashboard Button (Top Bar) -->
     <div class="mobile-dashboard-bar">
