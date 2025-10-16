@@ -283,6 +283,11 @@
                 padding: 6px 8px; /* Smaller padding */
                 font-size: 0.75rem;
             }
+
+            /* Hide desktop-only nav links on mobile */
+            .nav-link.desktop-only {
+                display: none;
+            }
         }
 
         /* Very small screens - further adjustments */
@@ -2818,6 +2823,24 @@
                         0 0 40px rgba(0, 255, 170, 0.6);
             transform: scale(1.05);
         }
+
+        /* Special orange glow for Raptor type */
+        .core-type-name.raptor-core {
+            color: #ff8c00;
+            text-shadow: 0 0 15px rgba(255, 140, 0, 0.8),
+                        0 0 25px rgba(255, 140, 0, 0.6),
+                        0 0 35px rgba(255, 140, 0, 0.4);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .core-type-name.raptor-core:hover {
+            color: #ffaa00;
+            text-shadow: 0 0 20px rgba(255, 170, 0, 1),
+                        0 0 30px rgba(255, 170, 0, 0.8),
+                        0 0 40px rgba(255, 170, 0, 0.6);
+            transform: scale(1.05);
+        }
         
         .core-type-separator {
             font-size: 1.4rem;
@@ -5061,12 +5084,12 @@
                 <div class="nav-section">
                     <div class="nav-links">
                         <a href="#about" class="nav-link">About</a>
-                        <a href="#stats" class="nav-link">Stats</a>
-                        <a href="dashboard/index.html" class="nav-link" style="background: linear-gradient(135deg, var(--core-blue), var(--core-cyan)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900;">DASHBOARD</a>
                         <a href="#howto" class="nav-link">Buy</a>
-                        <a href="#whale" class="nav-link">Whale</a>
-                        <a href="#art" class="nav-link">Gallery</a>
-                        <a href="#roadmap" class="nav-link">Roadmap</a>
+                        <a href="dashboard/index.html" class="nav-link" style="background: linear-gradient(135deg, var(--core-blue), var(--core-cyan)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900;">DASHBOARD</a>
+                        <a href="#art" class="nav-link">Art</a>
+                        <a href="#stats" class="nav-link">Stats</a>
+                        <a href="#whale" class="nav-link desktop-only">Whale</a>
+                        <a href="#roadmap" class="nav-link desktop-only">Roadmap</a>
                     </div>
                 </div>
             </div>

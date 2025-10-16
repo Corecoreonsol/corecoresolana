@@ -88,9 +88,16 @@
         @media (max-width: 1024px) {
             html, body {
                 overflow-y: auto !important;
-                -webkit-overflow-scrolling: touch;
+                -webkit-overflow-scrolling: auto;
+                scroll-behavior: smooth;
                 height: auto;
                 min-height: 100%;
+                position: relative;
+            }
+
+            /* Fix scroll issues on mobile */
+            * {
+                -webkit-overflow-scrolling: auto;
             }
         }
 
@@ -1282,8 +1289,27 @@
             }
 
             .editor-canvas-area {
-                min-height: 220px; /* Added for 480px */
-                max-height: 300px; /* Added for 480px */
+                min-height: 250px;
+                max-height: 250px;
+                aspect-ratio: 1;
+                width: 250px;
+                margin: 0 auto;
+            }
+            
+            .canvas-wrapper {
+                width: 100%;
+                height: 100%;
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            #editorCanvas {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                display: block;
             }
             
             .editor-controls {
@@ -1313,9 +1339,74 @@
                 font-size: 0.4rem;
             }
         }
+
+        /* Mobile Notice Styles */
+        .mobile-notice {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 25, 40, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--core-blue);
+            z-index: 10000;
+            display: none;
+        }
+
+        .mobile-notice-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            max-width: 100%;
+        }
+
+        .mobile-notice-text {
+            color: var(--core-text-blue);
+            font-size: 0.85rem;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            flex: 1;
+        }
+
+        .mobile-notice-close {
+            background: none;
+            border: none;
+            color: var(--core-cyan);
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 15px;
+            line-height: 1;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-notice-close:hover {
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .mobile-notice {
+                display: block;
+            }
+
+            .mobile-notice-text {
+                font-size: 0.75rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Mobile Notice -->
+    <div class="mobile-notice" id="mobileNotice">
+        <div class="mobile-notice-content">
+            <span class="mobile-notice-text">📱 For the best experience, please use the desktop version on a PC</span>
+            <button class="mobile-notice-close" onclick="closeMobileNotice()">×</button>
+        </div>
+    </div>
+
     <!-- Animated Stars Background -->
     <div class="stars-container" id="starsContainer"></div>
 
@@ -1769,11 +1860,17 @@
                 // Export
                 this.exportBtn.addEventListener('click', () => this.exportCanvas());
                 
-                // Canvas drag
+                // Canvas drag - Mouse events
                 this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
                 this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
                 this.canvas.addEventListener('mouseup', () => this.handleMouseUp());
                 this.canvas.addEventListener('mouseleave', () => this.handleMouseUp());
+                
+                // Canvas drag - Touch events for mobile
+                this.canvas.addEventListener('touchstart', (e) => this.handleTouchStart(e));
+                this.canvas.addEventListener('touchmove', (e) => this.handleTouchMove(e));
+                this.canvas.addEventListener('touchend', () => this.handleMouseUp());
+                this.canvas.addEventListener('touchcancel', () => this.handleMouseUp());
                 
                 // Window resize
                 window.addEventListener('resize', () => this.setupCanvas());
@@ -2350,6 +2447,25 @@
                 this.isDragging = false;
                 this.render();
             }
+
+            // Touch event handlers for mobile support
+            handleTouchStart(e) {
+                e.preventDefault(); // Prevent scrolling
+                const touch = e.touches[0];
+                this.handleMouseDown({
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+            }
+
+            handleTouchMove(e) {
+                e.preventDefault(); // Prevent scrolling
+                const touch = e.touches[0];
+                this.handleMouseMove({
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+            }
             
             exportCanvas() {
                 const exportNote = document.getElementById('exportNote');
@@ -2416,6 +2532,18 @@
         document.addEventListener('DOMContentLoaded', () => {
             const coreEditor = new CoreEditor();
         });
+        
+        // Mobile Notice Functions
+        function closeMobileNotice() {
+            const notice = document.getElementById('mobileNotice');
+            if (notice) {
+                notice.style.transition = 'transform 0.3s ease';
+                notice.style.transform = 'translateY(-100%)';
+                setTimeout(() => {
+                    notice.style.display = 'none';
+                }, 300);
+            }
+        }
         
         // Fallback - jeśli DOMContentLoaded już się wykonał
         if (document.readyState === 'loading') {
