@@ -281,9 +281,10 @@
                 touch-action: none !important;
                 /* Ensure stars don't affect background on mobile */
                 background: transparent !important;
-                /* Keep FIXED positioning so stars are visible throughout entire scroll */
-                position: fixed !important; /* Changed back to fixed from absolute */
-                height: 100vh !important; /* Cover viewport */
+                /* Use ABSOLUTE positioning to cover entire document */
+                position: absolute !important;
+                height: 100% !important; /* Cover entire document height */
+                min-height: 100vh !important;
                 width: 100vw !important;
                 top: 0 !important;
                 left: 0 !important;
@@ -835,14 +836,15 @@
         
         /* ===== ULTRA SMOOTH GPU-ACCELERATED STARS ===== */
         .stars-container {
-            position: fixed; /* Fixed positioning - stays visible throughout scroll */
+            position: absolute; /* Changed to absolute so it covers entire document height */
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh; /* Cover entire viewport - fixed position keeps it visible while scrolling */
+            width: 100%;
+            height: 100%; /* Cover entire document */
+            min-height: 100vh; /* At least viewport height */
             pointer-events: none;
             z-index: 1;
-            overflow: hidden;
+            overflow: visible; /* Changed from hidden to visible so stars can move */
             /* Enhanced GPU acceleration */
             will-change: transform;
             transform: translate3d(0, 0, 0);
@@ -874,16 +876,13 @@
             background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,0.6) 70%, transparent 100%); /* Zwiększona intensywność */
             border-radius: 50%;
             opacity: 0.85; /* Zwiększone z 0.7 */
-            /* Ultra smooth GPU acceleration */
+            /* Ultra smooth GPU acceleration - NO TRANSITION for smooth parallax */
             will-change: transform, opacity;
             /* Używaj CSS variables dla mouse-reactivity - nie nadpisuje animacji! */
             --scale-factor: 1;
             transform: translate3d(var(--move-x, 0px), var(--move-y, 0px), 0) scale(var(--scale-factor));
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
-            /* Very fast transitions to avoid position jumps */
-            transition: transform 0.05s ease-out, 
-                       opacity 0.05s ease-out;
         }
         
         .star.large {
@@ -4454,12 +4453,14 @@
             /* Ensure stars container doesn't interfere on mobile */
             .stars-container {
                 background: transparent !important;
-                /* Keep fixed positioning and full coverage */
-                position: fixed !important;
-                height: 100vh !important;
+                /* Use ABSOLUTE positioning to cover entire document */
+                position: absolute !important;
+                height: 100% !important; /* Cover entire document height */
+                min-height: 100vh !important;
                 width: 100vw !important;
                 top: 0 !important;
                 left: 0 !important;
+                overflow: visible !important; /* Allow stars to move */
                 /* Keep GPU acceleration for smooth performance */
                 will-change: transform;
             }
@@ -6369,14 +6370,13 @@
                 this.stars = [];
                 // ⚡ OPTYMALIZACJA WYDAJNOŚCI - minimalistyczna liczba gwiazd
                 // Inspiracja: corecoreonsol.xyz - mniej = więcej elegancji
-                // Było: 150-250 gwiazd
-                // Teraz: 60-100 gwiazd (subtelne i minimalistyczne)
+                // Zwiększona liczba gwiazd dla pokrycia całego dokumentu
                 this.numStars = Math.min(
-                    window.innerWidth > 1920 ? 100 : 
-                    window.innerWidth > 1440 ? 80 : 
-                    window.innerWidth > 768 ? 60 : 
-                    40, // Mobile - minimalne tło
-                    100
+                    window.innerWidth > 1920 ? 400 : 
+                    window.innerWidth > 1440 ? 300 : 
+                    window.innerWidth > 768 ? 200 : 
+                    150, // Mobile - wystarczająca liczba dla całej strony
+                    500
                 );
                 this.mouseX = -1000; // Start off-screen
                 this.mouseY = -1000;
@@ -6401,7 +6401,15 @@
             
             init() {
                 const viewportWidth = window.innerWidth;
-                const viewportHeight = window.innerHeight;
+                // Use FULL document height instead of viewport-based height
+                const documentHeight = Math.max(
+                    document.body.scrollHeight,
+                    document.documentElement.scrollHeight,
+                    document.body.offsetHeight,
+                    document.documentElement.offsetHeight,
+                    document.documentElement.clientHeight
+                );
+                const viewportHeight = Math.max(documentHeight, window.innerHeight * 3); // At least 3x viewport or full document
                 
                 const fragment = document.createDocumentFragment();
                 const fragBack = document.createDocumentFragment();
@@ -6426,12 +6434,7 @@
                     this.container.appendChild(fragment);
                 }
                 
-                // Enable transitions after all stars are positioned
-                requestAnimationFrame(() => {
-                    this.stars.forEach(star => {
-                        star.style.transition = 'transform 0.05s ease-out, opacity 0.05s ease-out';
-                    });
-                });
+                // NO transitions - we want smooth parallax without interruptions
             }
             
             createStar(index, viewportWidth, viewportHeight) {
@@ -6487,9 +6490,6 @@
                 star.style.setProperty('--move-x', '0px');
                 star.style.setProperty('--move-y', '0px');
                 star.style.willChange = 'transform, opacity';
-                
-                // Disable transitions initially to prevent position jumps
-                star.style.transition = 'none';
                 
                 this.stars.push(star);
                 return star;
@@ -6644,11 +6644,11 @@
                     let ticking = false;
                     const updateParallax = () => {
                         const y = window.scrollY || window.pageYOffset || 0;
-                        // Move layers in opposite directions (subtle factors)
-                        const backOffset = y * -0.08;  // moves up as you scroll down
-                        const frontOffset = y * 0.12;  // moves down as you scroll down
-                        back.style.transform = `translate3d(0, ${backOffset.toFixed(2)}px, 0)`;
-                        front.style.transform = `translate3d(0, ${frontOffset.toFixed(2)}px, 0)`;
+                        // ALL stars move in opposite direction of scroll with HIGHER intensity
+                        const backOffset = y * -0.25;   // moves up as you scroll down (slower layer)
+                        const frontOffset = y * -0.35;  // moves up as you scroll down (faster layer)
+                        back.style.transform = `translate3d(0, ${backOffset}px, 0)`;
+                        front.style.transform = `translate3d(0, ${frontOffset}px, 0)`;
                         ticking = false;
                     };
                     const onScroll = () => {
