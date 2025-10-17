@@ -2361,8 +2361,8 @@
                         this.logoImage.src = 'corelogo.svg';
                     }
                     
-                    const logoWidth = 100;
-                    const logoHeight = 100;
+                    const logoWidth = 200;
+                    const logoHeight = 200;
                     // Create logo and immediately center using computed anchor
                     this.logo = {
                         x: 0,
@@ -2499,11 +2499,13 @@
                 const exportNote = document.getElementById('exportNote');
                 
                 if (this.mediaType === 'video') {
-                    exportNote.textContent = 'Exporting current frame as PNG...';
+                    exportNote.textContent = 'Video export not yet supported. Exporting current frame in high quality...';
                     this.currentMedia.pause();
-                    this.render();
                     
-                    this.canvas.toBlob((blob) => {
+                    // Create high-res export canvas
+                    const exportCanvas = this.createHighResExport();
+                    
+                    exportCanvas.toBlob((blob) => {
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = url;
@@ -2511,21 +2513,67 @@
                         a.click();
                         URL.revokeObjectURL(url);
                         
-                        exportNote.textContent = 'Frame exported! For full video processing, use external video editor.';
+                        exportNote.textContent = 'High quality frame exported!';
                         setTimeout(() => {
                             exportNote.textContent = 'Note: Videos export as current frame (PNG)';
                         }, 3000);
-                    }, 'image/png');
+                    }, 'image/png', 1.0);
                 } else {
-                    this.canvas.toBlob((blob) => {
+                    exportNote.textContent = 'Exporting in high quality...';
+                    
+                    // Create high-res export canvas
+                    const exportCanvas = this.createHighResExport();
+                    
+                    exportCanvas.toBlob((blob) => {
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = url;
                         a.download = 'core-editor-image.png';
                         a.click();
                         URL.revokeObjectURL(url);
-                    }, 'image/png');
+                        
+                        exportNote.textContent = 'High quality image exported!';
+                        setTimeout(() => {
+                            exportNote.textContent = '';
+                        }, 2000);
+                    }, 'image/png', 1.0);
                 }
+            }
+            
+            createHighResExport() {
+                // Get original media dimensions
+                const mediaWidth = this.currentMedia.videoWidth || this.currentMedia.naturalWidth || this.currentMedia.width;
+                const mediaHeight = this.currentMedia.videoHeight || this.currentMedia.naturalHeight || this.currentMedia.height;
+                
+                // Create export canvas at original resolution
+                const exportCanvas = document.createElement('canvas');
+                exportCanvas.width = mediaWidth;
+                exportCanvas.height = mediaHeight;
+                const exportCtx = exportCanvas.getContext('2d');
+                
+                // Draw media at full resolution
+                exportCtx.drawImage(this.currentMedia, 0, 0, mediaWidth, mediaHeight);
+                
+                // Draw logo at proportionally scaled size
+                if (this.logo && this.logoImageLoaded && this.logoImage.complete) {
+                    const scaleX = mediaWidth / this.canvasDisplayWidth;
+                    const scaleY = mediaHeight / this.canvasDisplayHeight;
+                    
+                    exportCtx.save();
+                    exportCtx.globalAlpha = this.logo.opacity;
+                    exportCtx.imageSmoothingEnabled = true;
+                    exportCtx.imageSmoothingQuality = 'high';
+                    
+                    const exportLogoX = this.logo.x * scaleX;
+                    const exportLogoY = this.logo.y * scaleY;
+                    const exportLogoWidth = this.logo.width * scaleX;
+                    const exportLogoHeight = this.logo.height * scaleY;
+                    
+                    exportCtx.drawImage(this.logoImage, exportLogoX, exportLogoY, exportLogoWidth, exportLogoHeight);
+                    exportCtx.restore();
+                }
+                
+                return exportCanvas;
             }
             
             clearCanvas() {
