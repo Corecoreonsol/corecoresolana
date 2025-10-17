@@ -1368,12 +1368,12 @@
         /* Mobile Notice Styles */
         .mobile-notice {
             position: fixed;
-            top: 0;
+            bottom: 0;
             left: 0;
             right: 0;
             background: rgba(0, 25, 40, 0.95);
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--core-blue);
+            border-top: 1px solid var(--core-blue);
             z-index: 10000;
             display: none;
         }
@@ -1427,7 +1427,7 @@
     <!-- Mobile Notice -->
     <div class="mobile-notice" id="mobileNotice">
         <div class="mobile-notice-content">
-            <span class="mobile-notice-text">📱 For the best experience, please use the desktop version on a PC</span>
+            <span class="mobile-notice-text">📱 For the best experience, please use the desktop version on a PC. Video editing is available only on desktop.</span>
             <button class="mobile-notice-close" onclick="closeMobileNotice()">×</button>
         </div>
     </div>
@@ -1809,9 +1809,19 @@
             }
             
             init() {
+                // Check if mobile and restrict video upload
+                this.checkMobileAndRestrictVideo();
                 this.setupEventListeners();
                 this.setupCanvas();
                 this.setupCoreStyleSelection();
+            }
+            
+            checkMobileAndRestrictVideo() {
+                const isMobile = window.matchMedia('(max-width: 768px)').matches;
+                if (isMobile && this.editorMediaInput) {
+                    // On mobile, only allow images
+                    this.editorMediaInput.setAttribute('accept', 'image/*');
+                }
             }
             
             setupEventListeners() {
@@ -3024,7 +3034,7 @@
             const notice = document.getElementById('mobileNotice');
             if (notice) {
                 notice.style.transition = 'transform 0.3s ease';
-                notice.style.transform = 'translateY(-100%)';
+                notice.style.transform = 'translateY(100%)';
                 setTimeout(() => {
                     notice.style.display = 'none';
                 }, 300);
