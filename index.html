@@ -220,13 +220,13 @@
                 overscroll-behavior-y: none; /* Prevent bounce effect that shows white background */
                 width: 100%;
                 max-width: 100vw;
-                /* KEEP THE SAME GRADIENT AS DESKTOP - but with proper sizing */
-                background: radial-gradient(ellipse at center, #001433 0%, #001433 30%, #001228 50%, #000a1a 75%, #000204 100%) !important;
+                /* MASSIVE gradient so center color is visible everywhere */
+                background: radial-gradient(ellipse 200% 300% at center, #001433 0%, #001433 40%, #001228 60%, #000a1a 85%, #000204 100%) !important;
                 background-attachment: fixed !important;
                 background-position: center center !important;
-                background-size: 100% 100% !important; /* Make gradient cover full viewport size */
+                background-size: cover !important;
                 background-repeat: no-repeat !important;
-                background-color: #000204 !important; /* Fallback */
+                background-color: #001433 !important; /* Fallback to center color */
                 /* ULTRA SHARP RENDERING ON ALL MOBILE DEVICES */
                 -webkit-font-smoothing: antialiased !important;
                 -moz-osx-font-smoothing: grayscale !important;
@@ -4412,13 +4412,13 @@
         /* Mobile-specific background fixes */
         @media (max-width: 768px) {
             body {
-                /* KEEP THE SAME GRADIENT AS DESKTOP */
-                background: radial-gradient(ellipse at center, #001433 0%, #001433 30%, #001228 50%, #000a1a 75%, #000204 100%) !important;
+                /* MASSIVE gradient so center color is visible everywhere */
+                background: radial-gradient(ellipse 200% 300% at center, #001433 0%, #001433 40%, #001228 60%, #000a1a 85%, #000204 100%) !important;
                 background-attachment: fixed !important;
                 background-position: center center !important;
-                background-size: 100% 100% !important; /* Make gradient cover full viewport size */
+                background-size: cover !important;
                 background-repeat: no-repeat !important;
-                background-color: #000204 !important; /* Fallback */
+                background-color: #001433 !important; /* Fallback to center color */
                 /* Prevent bounce/overscroll showing white background */
                 overscroll-behavior: none;
             }
