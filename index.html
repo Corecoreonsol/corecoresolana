@@ -411,6 +411,16 @@
             .nav-link.desktop-only {
                 display: none;
             }
+
+            /* Show mobile-only nav links on mobile */
+            .nav-link.mobile-only {
+                display: inline-block;
+            }
+        }
+
+        /* Hide mobile-only nav links on desktop */
+        .nav-link.mobile-only {
+            display: none;
         }
 
         /* Very small screens - further adjustments */
@@ -5350,11 +5360,18 @@
             <div class="nav-content">
                 <div class="nav-section">
                     <div class="nav-links">
+                        <!-- Desktop order: ABOUT STATS BUY DASHBOARD ART WHALE ROADMAP -->
                         <a href="#about" class="nav-link">About</a>
-                        <a href="#stats" class="nav-link">Stats</a>
-                        <a href="#art" class="nav-link">Art</a>
+                        <a href="#stats" class="nav-link desktop-only">Stats</a>
+                        <a href="#howto" class="nav-link desktop-only">Buy</a>
+                        
+                        <!-- Mobile order: ABOUT BUY DASHBOARD ART STATS -->
+                        <a href="#howto" class="nav-link mobile-only">Buy</a>
+                        
                         <a href="dashboard/index.html" class="nav-link" style="background: linear-gradient(135deg, var(--core-blue), var(--core-cyan)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900;">DASHBOARD</a>
-                        <a href="#howto" class="nav-link">Buy</a>
+                        
+                        <a href="#art" class="nav-link">Art</a>
+                        <a href="#stats" class="nav-link mobile-only">Stats</a>
                         <a href="#whale" class="nav-link desktop-only">Whale</a>
                         <a href="#roadmap" class="nav-link desktop-only">Roadmap</a>
                     </div>
