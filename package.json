@@ -41,10 +41,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Corecoreonsol/corecore.git"
+    "url": "https://github.com/Corecoreonsol/corecoresolana.git"
   },
-  "homepage": "https://corecoreonsol.vercel.app",
+  "homepage": "https://corecoresolana.vercel.app",
   "bugs": {
-    "url": "https://github.com/Corecoreonsol/corecore/issues"
+    "url": "https://github.com/Corecoreonsol/corecoresolana/issues"
   }
 }
