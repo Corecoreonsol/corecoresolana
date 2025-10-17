@@ -4720,6 +4720,9 @@
             overflow: hidden;
             pointer-events: auto;
             z-index: 10;
+            text-align: center; /* Wyśrodkowanie tekstu */
+            white-space: nowrap; /* Nie łam linii */
+            display: inline-block; /* Lepsze wyśrodkowanie */
         }
         
         .dashboard-button::before {
@@ -4988,10 +4991,13 @@
             }
             
             .dashboard-button {
-                top: calc(50% + clamp(50px, 8vh, 70px)); /* Bardzo blisko logo na mobile */
-                font-size: clamp(0.7rem, 1.8vw, 0.85rem);
-                padding: clamp(8px, 2vw, 12px) clamp(20px, 5vw, 28px);
-                letter-spacing: 0.15em;
+                top: calc(50% + clamp(35px, 6vh, 50px)); /* Bliżej logo na mobile */
+                font-size: clamp(0.6rem, 1.5vw, 0.7rem); /* Mniejszy tekst */
+                padding: clamp(6px, 1.5vw, 8px) clamp(16px, 4vw, 20px); /* Mniejszy padding */
+                letter-spacing: 0.12em; /* Zmniejszone letter-spacing */
+                text-align: center; /* Wyśrodkowanie tekstu */
+                white-space: nowrap; /* Nie łam linii */
+                display: inline-block; /* Lepsze wyśrodkowanie */
             }
             
             .dashboard-button:hover {
