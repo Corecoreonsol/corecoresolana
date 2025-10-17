@@ -1794,6 +1794,8 @@
                 this.logoImage = null;
                 this.logoImageLoaded = false;
                 this.selectedCoreStyle = null;
+                // Robust aspect ratio cache for logo (handles SVG reliably)
+                this.logoAspectRatio = null; // width / height
                 
                 // FFmpeg for video export
                 this.ffmpeg = null;
@@ -1814,6 +1816,61 @@
                 this.setupEventListeners();
                 this.setupCanvas();
                 this.setupCoreStyleSelection();
+            }
+
+            // Ensure we have a reliable aspect ratio for the logo image, including SVGs without intrinsic size
+            async ensureLogoAspectRatio() {
+                try {
+                    if (this.logoAspectRatio && isFinite(this.logoAspectRatio) && this.logoAspectRatio > 0) return this.logoAspectRatio;
+
+                    // Prefer naturalWidth/naturalHeight when available
+                    const nw = this.logoImage && (this.logoImage.naturalWidth || this.logoImage.width);
+                    const nh = this.logoImage && (this.logoImage.naturalHeight || this.logoImage.height);
+                    if (nw && nh) {
+                        this.logoAspectRatio = nw / nh;
+                        return this.logoAspectRatio;
+                    }
+
+                    // If it's an SVG, fetch and parse viewBox or width/height
+                    const src = (this.logoImage && this.logoImage.src) || '';
+                    if (src.toLowerCase().endsWith('.svg')) {
+                        const res = await fetch(src);
+                        const text = await res.text();
+                        const viewBoxMatch = text.match(/viewBox\s*=\s*"([^"]+)"/i);
+                        if (viewBoxMatch) {
+                            const parts = viewBoxMatch[1].trim().split(/[\s,]+/).map(Number);
+                            if (parts.length === 4) {
+                                const vbW = parts[2];
+                                const vbH = parts[3];
+                                if (vbW > 0 && vbH > 0) {
+                                    this.logoAspectRatio = vbW / vbH;
+                                    return this.logoAspectRatio;
+                                }
+                            }
+                        }
+                        // Fallback to width/height attributes in the SVG
+                        const widthMatch = text.match(/\bwidth\s*=\s*"([^"]+)"/i);
+                        const heightMatch = text.match(/\bheight\s*=\s*"([^"]+)"/i);
+                        const parseLen = (v) => {
+                            if (!v) return NaN;
+                            const num = parseFloat(v);
+                            return isFinite(num) ? num : NaN;
+                        };
+                        const wAttr = parseLen(widthMatch && widthMatch[1]);
+                        const hAttr = parseLen(heightMatch && heightMatch[1]);
+                        if (wAttr > 0 && hAttr > 0) {
+                            this.logoAspectRatio = wAttr / hAttr;
+                            return this.logoAspectRatio;
+                        }
+                    }
+
+                    // Last resort: assume 1:1 to avoid NaNs
+                    this.logoAspectRatio = 1;
+                    return this.logoAspectRatio;
+                } catch (_) {
+                    this.logoAspectRatio = 1;
+                    return this.logoAspectRatio;
+                }
             }
             
             checkMobileAndRestrictVideo() {
@@ -2399,29 +2456,23 @@
                 }
             }
             
-            addLogo() {
+            async addLogo() {
                 if (!this.logo) {
                     // Load logo image if not already loaded
                     if (!this.logoImage) {
                         this.logoImage = new Image();
                         
-                        this.logoImage.onload = () => {
+                        this.logoImage.onload = async () => {
                             this.logoImageLoaded = true;
                             // Compute a better anchor (vertical visual center)
                             this.computeLogoAnchor();
-                            // If logo already created, re-center using the computed anchor
+                            // Ensure we have aspect ratio and (re)center
+                            await this.ensureLogoAspectRatio();
                             if (this.logo) {
-                                // Recalculate logo dimensions with proper aspect ratio now that image is loaded
-                                const logoNaturalWidth = this.logoImage.naturalWidth || this.logoImage.width;
-                                const logoNaturalHeight = this.logoImage.naturalHeight || this.logoImage.height;
-                                const logoAspectRatio = logoNaturalWidth / logoNaturalHeight;
-                                
                                 const logoWidth = 200;
-                                const logoHeight = logoWidth / logoAspectRatio;
-                                
+                                const logoHeight = logoWidth / this.logoAspectRatio;
                                 this.logo.width = logoWidth;
                                 this.logo.height = logoHeight;
-                                
                                 this.centerLogo();
                             } else {
                                 this.render();
@@ -2439,14 +2490,10 @@
                     
                     // Calculate proper aspect ratio for logo
                     let logoWidth = 200;
-                    let logoHeight = 200; // Default square, will be corrected when image loads
-                    
-                    // If image is already loaded, use its actual aspect ratio
-                    if (this.logoImage && this.logoImage.complete && this.logoImage.naturalWidth) {
-                        const logoNaturalWidth = this.logoImage.naturalWidth || this.logoImage.width;
-                        const logoNaturalHeight = this.logoImage.naturalHeight || this.logoImage.height;
-                        const logoAspectRatio = logoNaturalWidth / logoNaturalHeight;
-                        logoHeight = logoWidth / logoAspectRatio;
+                    let logoHeight = 200; // temporary until we resolve aspect ratio
+                    if (this.logoImage && this.logoImage.complete) {
+                        await this.ensureLogoAspectRatio();
+                        logoHeight = logoWidth / this.logoAspectRatio;
                     }
                     
                     // Create logo and immediately center using computed anchor
@@ -2495,9 +2542,8 @@
             centerLogo() {
                 if (this.logo) {
                     const targetX = (this.canvasDisplayWidth - this.logo.width) / 2;
-                    // Calibration: move slightly down by 6px to match exact visual center
-                    const calibrationPx = 6;
-                    const targetY = (this.canvasDisplayHeight / 2) - (this.logoAnchorYNorm * this.logo.height) + calibrationPx;
+                    // Geometric center vertically (no anchor/calibration)
+                    const targetY = (this.canvasDisplayHeight - this.logo.height) / 2;
                     this.logo.x = targetX;
                     this.logo.y = targetY;
                     this.render();
@@ -2537,10 +2583,9 @@
                 newX = Math.max(-this.logo.width + 50, Math.min(newX, this.canvasDisplayWidth - 50));
                 newY = Math.max(-this.logo.height + 50, Math.min(newY, this.canvasDisplayHeight - 50));
                 
-                // Snap to center (using visual anchor for vertical alignment)
+                // Snap to geometric center
                 const centerX = (this.canvasDisplayWidth - this.logo.width) / 2;
-                const calibrationPx = 6;
-                const centerY = (this.canvasDisplayHeight / 2) - (this.logoAnchorYNorm * this.logo.height) + calibrationPx;
+                const centerY = (this.canvasDisplayHeight - this.logo.height) / 2;
                 const snapThreshold = 20;
                 
                 if (Math.abs(newX - centerX) < snapThreshold) newX = centerX;
