@@ -1050,6 +1050,10 @@
             
             .pfp-upload-area {
                 min-height: 160px;
+                aspect-ratio: 16/9; /* Prostokątny kształt */
+                height: 200px;
+                width: 200px;
+                margin: 0 auto;
             }
             
             .upload-icon {
@@ -1111,6 +1115,7 @@
                 min-height: 250px; /* Increased from 180px */
                 max-height: 320px; /* Increased from 240px */
                 flex-shrink: 0;
+                aspect-ratio: 1; /* Kwadratowy kształt */
             }
             
             .editor-controls {
@@ -1142,6 +1147,10 @@
             
             .pfp-upload-area {
                 min-height: 120px;
+                aspect-ratio: 16/9; /* Prostokątny kształt */
+                height: 180px;
+                width: 180px;
+                margin: 0 auto;
             }
             
             .upload-icon {
@@ -1213,11 +1222,16 @@
             .editor-canvas-area {
                 min-height: 200px; /* Increased from 150px */
                 max-height: 280px; /* Increased from 200px */
+                aspect-ratio: 1; /* Kwadratowy kształt */
             }
             
             .pfp-upload-area {
                 min-height: 100px;
                 padding: 0.6rem;
+                aspect-ratio: 16/9; /* Prostokątny kształt */
+                height: 200px;
+                width: 200px;
+                margin: 0 auto;
             }
             
             .upload-icon {
@@ -1280,7 +1294,11 @@
                 overflow: visible;
                 padding-bottom: 35vh; /* Slightly reduced from 40vh */
             }            .pfp-panel {
-                min-height: 280px; /* Prostokątny jak był Core Editor */
+                min-height: 250px;
+                max-height: 250px;
+                aspect-ratio: 1;
+                width: 250px;
+                margin: 0 auto;
                 height: auto;
             }
             
@@ -1290,9 +1308,15 @@
             }
 
             .editor-canvas-area {
-                min-height: 250px; /* Kwadratowy jak był PFP */
-                max-height: 250px;
-                width: 250px;
+                min-height: 280px;
+                height: auto;
+                aspect-ratio: 1; /* Kwadratowy kształt */
+            }
+            
+            .pfp-upload-area {
+                aspect-ratio: 16/9; /* Prostokątny kształt */
+                height: 200px;
+                width: 200px;
                 margin: 0 auto;
             }
             
