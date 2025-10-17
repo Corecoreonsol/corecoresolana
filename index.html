@@ -220,17 +220,26 @@
                 overscroll-behavior-y: none; /* Prevent bounce effect that shows white background */
                 width: 100%;
                 max-width: 100vw;
-                /* HUGE gradient so center color (header color) is visible EVERYWHERE */
-                background: radial-gradient(ellipse at center, #001433 0%, #001433 60%, #001228 80%, #000a1a 95%, #000204 100%) !important;
-                background-attachment: fixed !important; /* Fixed so it stays in place */
-                background-position: center center !important;
-                background-repeat: no-repeat !important;
-                background-size: 300% 400% !important; /* MASSIVE size so center is visible everywhere */
-                background-color: #001433 !important; /* Fallback to header/center color */
+                /* Base color - medium tone */
+                background: #001228 !important;
+                background-color: #001228 !important;
                 /* ULTRA SHARP RENDERING ON ALL MOBILE DEVICES */
                 -webkit-font-smoothing: antialiased !important;
                 -moz-osx-font-smoothing: grayscale !important;
                 text-rendering: optimizeLegibility !important;
+            }
+            
+            /* Create vignette overlay that stays with viewport */
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                pointer-events: none;
+                z-index: 0;
+                background: radial-gradient(ellipse at center, transparent 0%, transparent 20%, rgba(0,10,26,0.3) 50%, rgba(0,2,4,0.7) 100%);
             }
             
             /* Ensure ALL sections have consistent transparent background on mobile */
@@ -4412,15 +4421,24 @@
         /* Mobile-specific background fixes */
         @media (max-width: 768px) {
             body {
-                /* HUGE gradient so center color (header color) is visible EVERYWHERE */
-                background: radial-gradient(ellipse at center, #001433 0%, #001433 60%, #001228 80%, #000a1a 95%, #000204 100%) !important;
-                background-attachment: fixed !important;
-                background-position: center center !important;
-                background-repeat: no-repeat !important;
-                background-size: 300% 400% !important; /* MASSIVE size */
-                background-color: #001433 !important; /* Fallback to header color */
+                /* Base solid color */
+                background: #001228 !important;
+                background-color: #001228 !important;
                 /* Prevent bounce/overscroll showing white background */
                 overscroll-behavior: none;
+            }
+            
+            /* Vignette overlay - darkens corners, stays with viewport */
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                pointer-events: none;
+                z-index: 0;
+                background: radial-gradient(ellipse at center, transparent 0%, transparent 20%, rgba(0,10,26,0.3) 50%, rgba(0,2,4,0.7) 100%);
             }
             
             /* Ensure stars container doesn't interfere on mobile */
