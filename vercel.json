@@ -1,15 +1,5 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "**/*.{html,css,js,json,svg,jpg,jpeg,png,gif,webp,mp4,ico}",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "api/index.js",
-      "use": "@vercel/node"
-    }
-  ],
   "routes": [
     {
       "src": "/api/(.*)",
