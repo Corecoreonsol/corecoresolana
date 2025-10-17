@@ -6370,13 +6370,13 @@
                 this.stars = [];
                 // ⚡ OPTYMALIZACJA WYDAJNOŚCI - minimalistyczna liczba gwiazd
                 // Inspiracja: corecoreonsol.xyz - mniej = więcej elegancji
-                // Zwiększona liczba gwiazd dla pokrycia całego dokumentu
+                // Znacznie zwiększona liczba gwiazd dla pełnego pokrycia całego dokumentu
                 this.numStars = Math.min(
-                    window.innerWidth > 1920 ? 400 : 
-                    window.innerWidth > 1440 ? 300 : 
-                    window.innerWidth > 768 ? 200 : 
-                    150, // Mobile - wystarczająca liczba dla całej strony
-                    500
+                    window.innerWidth > 1920 ? 800 : 
+                    window.innerWidth > 1440 ? 600 : 
+                    window.innerWidth > 768 ? 400 : 
+                    250, // Mobile - więcej gwiazd dla lepszego efektu
+                    1000
                 );
                 this.mouseX = -1000; // Start off-screen
                 this.mouseY = -1000;
