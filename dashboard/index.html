@@ -262,7 +262,7 @@
             flex-direction: column;
             height: 100%;
             position: relative;
-            overflow: hidden;
+            overflow: visible;
         }
 
         .pfp-panel::before {
@@ -1008,12 +1008,14 @@
             .pfp-panel {
                 min-height: 450px;
                 height: auto;
+                overflow: visible;
             }
             
             .editor-panel {
                 min-height: 500px;
                 height: auto;
                 margin-bottom: 8vh; /* Slightly reduced from 10vh */
+                overflow: visible;
             }
 
             .editor-canvas-area {
@@ -1170,14 +1172,16 @@
             
             .pfp-panel {
                 padding: 0.6rem;
-                min-height: 400px;
+                min-height: 450px;
                 height: auto;
+                overflow: visible;
             }
             
             .editor-panel {
                 padding: 0.6rem;
                 min-height: 650px; /* Increased from 400px */
                 height: auto;
+                overflow: visible;
             }
             
             .editor-controls {
@@ -1282,10 +1286,13 @@
                 height: auto;
                 min-height: 100vh;
                 overflow: visible;
-                padding-bottom: 35vh; /* Slightly reduced from 40vh */
-            }            .pfp-panel {
-                min-height: 280px;
+                padding-bottom: 50vh;
+            }
+            
+            .pfp-panel {
+                min-height: 450px;
                 height: auto;
+                overflow: visible;
             }
             
             .editor-panel {
