@@ -229,6 +229,14 @@
                 text-rendering: optimizeLegibility !important;
             }
             
+            /* Ensure ALL sections have consistent transparent background on mobile */
+            section, .logo-container, .about-section, .stats-section, .movement-section, 
+            .howto-section, .whale-section, .art-section, .core-types-section, 
+            .core-editor-section, .roadmap-section {
+                background: transparent !important;
+                background-color: transparent !important;
+            }
+            
             * {
                 max-width: 100vw;
                 /* Force crisp text everywhere on mobile */
@@ -905,6 +913,8 @@
             padding: 60px 20px;
             position: relative;
             z-index: 2;
+            /* Ensure consistent background */
+            background: transparent;
         }
         
         .about-content {
@@ -1050,6 +1060,8 @@
             padding: 60px 20px;
             position: relative;
             z-index: 2;
+            /* Ensure consistent background */
+            background: transparent;
         }
         
         .stats-content {
@@ -1503,6 +1515,8 @@
             padding: 60px 0; /* Usunięto padding horizontal */
             position: relative;
             z-index: 2;
+            /* Ensure consistent background */
+            background: transparent;
         }
         
         .movement-title {
@@ -1772,6 +1786,8 @@
             padding: 60px 20px;
             position: relative;
             z-index: 2;
+            /* Ensure consistent background */
+            background: transparent;
         }
         
         .howto-content {
@@ -2066,6 +2082,8 @@
             padding: 60px 20px;
             position: relative;
             z-index: 2;
+            /* Ensure consistent background */
+            background: transparent;
         }
         
         .whale-content {
@@ -3446,6 +3464,8 @@
             padding: 60px 20px;
             position: relative;
             z-index: 2;
+            /* Ensure consistent background */
+            background: transparent;
         }
         
         .core-editor-content {
@@ -3752,6 +3772,8 @@
             z-index: 2;
             scroll-margin-top: 100px;
             scroll-snap-align: start;
+            /* Ensure consistent background */
+            background: transparent;
         }
         
         .roadmap-content {
@@ -4415,11 +4437,8 @@
             .logo-container {
                 -webkit-tap-highlight-color: transparent;
                 touch-action: manipulation;
-                /* Ensure consistent background on mobile */
-                background: radial-gradient(ellipse at center, #001433 0%, #001433 30%, #001228 50%, #000a1a 75%, #000204 100%);
-                background-attachment: local;
-                background-size: 100% 100%;
-                background-repeat: no-repeat;
+                /* Remove background - inherit from body for consistency */
+                background: transparent;
             }
         }
         /* Soft glow behind the logo using container pseudo-element to avoid image filter artifacts */
