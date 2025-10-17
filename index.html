@@ -207,6 +207,7 @@
             /* 🎨 Jeszcze większa wineta, ciemniejszy niebieski, tylko boki ciemne */
             background: radial-gradient(ellipse at center, #001433 0%, #001433 30%, #001228 50%, #000a1a 75%, #000204 100%);
             background-attachment: fixed; /* Tło nie scrolluje - efekt depth */
+            background-color: #000204; /* Fallback color to prevent any white flashes */
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             /* Performance: Use system fonts for faster loading */
         }
@@ -216,8 +217,12 @@
             html, body {
                 touch-action: pan-y;
                 overscroll-behavior-x: none;
+                overscroll-behavior-y: none; /* Prevent bounce effect that shows white background */
                 width: 100%;
                 max-width: 100vw;
+                /* Fix mobile background issues */
+                background-attachment: local !important; /* Use local instead of fixed for mobile */
+                background-color: #000204 !important; /* Fallback solid color to prevent white flash */
                 /* ULTRA SHARP RENDERING ON ALL MOBILE DEVICES */
                 -webkit-font-smoothing: antialiased !important;
                 -moz-osx-font-smoothing: grayscale !important;
@@ -253,10 +258,16 @@
             .stars-container {
                 pointer-events: none !important;
                 touch-action: none !important;
+                /* Ensure stars don't affect background on mobile */
+                background: transparent !important;
+                /* Use local positioning to match body background */
+                position: absolute !important; /* Change from fixed to absolute */
             }
             
             .star {
                 pointer-events: none !important;
+                /* Reduce star opacity on mobile for better consistency */
+                opacity: 0.4 !important;
             }
         }
         
@@ -4368,6 +4379,26 @@
             overflow-x: hidden;
         }
         
+        /* Mobile-specific background fixes */
+        @media (max-width: 768px) {
+            body {
+                /* Fix mobile background issues - prevent color differences */
+                background-attachment: local !important; /* Use local instead of fixed for mobile */
+                background-color: #000204 !important; /* Fallback solid color to prevent white flash */
+                background-repeat: no-repeat;
+                background-size: 100% 100%;
+                /* Prevent bounce/overscroll showing white background */
+                overscroll-behavior: none;
+            }
+            
+            /* Ensure stars container doesn't interfere on mobile */
+            .stars-container {
+                background: transparent !important;
+                /* Reduce performance optimizations on mobile for consistency */
+                will-change: auto;
+            }
+        }
+        
         .logo-container {
             height: 100vh;
             display: flex;
@@ -4384,6 +4415,11 @@
             .logo-container {
                 -webkit-tap-highlight-color: transparent;
                 touch-action: manipulation;
+                /* Ensure consistent background on mobile */
+                background: radial-gradient(ellipse at center, #001433 0%, #001433 30%, #001228 50%, #000a1a 75%, #000204 100%);
+                background-attachment: local;
+                background-size: 100% 100%;
+                background-repeat: no-repeat;
             }
         }
         /* Soft glow behind the logo using container pseudo-element to avoid image filter artifacts */
