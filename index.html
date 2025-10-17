@@ -70,6 +70,50 @@
         // Animations removed - simple static page
         setTimeout(initScrollAnimations, 1000);
         
+        // CRITICAL DEBUG: Global scroll blocker detection
+        window.addEventListener('load', () => {
+            console.log('🔍 GLOBAL SCROLL DEBUG STARTED');
+            
+            // Test basic scroll capability
+            const testScroll = () => {
+                const before = window.pageYOffset;
+                window.scrollTo(0, 100);
+                const after = window.pageYOffset;
+                console.log(`🧪 Global scroll test: ${before} → ${after} (${after === 100 ? '✅ WORKING' : '❌ BLOCKED'})`);
+                window.scrollTo(0, before);
+                return after === 100;
+            };
+            
+            if (!testScroll()) {
+                console.error('🚨 SCROLL IS GLOBALLY BLOCKED!');
+                console.log('🔧 Applying nuclear scroll fixes...');
+                
+                // Nuclear option: Force scroll capability
+                document.body.style.overflow = 'visible !important';
+                document.documentElement.style.overflow = 'visible !important';
+                document.body.style.height = 'auto !important';
+                document.documentElement.style.height = 'auto !important';
+                
+                // Remove all potential blockers
+                const allElements = document.querySelectorAll('*');
+                allElements.forEach(el => {
+                    if (el.style.overflow === 'hidden' && (el === document.body || el === document.documentElement)) {
+                        el.style.overflow = 'auto';
+                        console.log('🔧 Fixed overflow on:', el.tagName);
+                    }
+                });
+                
+                // Test again
+                setTimeout(() => {
+                    if (testScroll()) {
+                        console.log('✅ Nuclear fix successful!');
+                    } else {
+                        console.error('❌ Even nuclear fix failed - scroll is fundamentally broken');
+                    }
+                }, 100);
+            }
+        });
+        
         console.log('🎬 ANIMATION SYSTEM LOADED');
     </script>
     
@@ -89,11 +133,11 @@
             --core-accent: #0080ff;
         }
 
-        /* ===== GLOBAL IMAGE FIX FOR ART GALLERY ===== */
+        /* ===== ART GALLERY IMAGES: fill placeholder without distortion (crop allowed) ===== */
         .art-item img {
             width: 100% !important;
             height: 100% !important;
-            object-fit: contain !important;
+            object-fit: cover !important; /* fill without stretching */
             object-position: center !important;
             display: block !important;
             background: rgba(0, 25, 40, 0.2) !important;
@@ -131,9 +175,14 @@
             }
             
             /* Custom smooth scroll timing - faster and more responsive */
-            * {
+            section {
                 scroll-margin-top: 80px;
                 scroll-snap-align: start;
+            }
+            
+            /* Remove scroll-snap from all other elements to prevent conflicts */
+            * {
+                scroll-margin-top: 80px;
             }
         }
         
@@ -151,7 +200,7 @@
         }
         
         html, body {
-            height: 100%;
+            min-height: 100%; /* Changed from height: 100% to allow scroll */
             position: relative;
             overflow-x: hidden;
             max-width: 100vw;
@@ -282,7 +331,7 @@
             width: 60%;
             max-width: 680px;
             height: 40px; /* Powiększona wysokość dla lepszej czytelności */
-            pointer-events: none;
+            pointer-events: auto; /* Changed from none to auto - navbar should be clickable */
             opacity: 1;
             transition: transform 0.8s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smooth slide down animation */
             will-change: transform;
@@ -756,6 +805,21 @@
             perspective: 1000px;
             -webkit-perspective: 1000px;
         }
+        /* Parallax layers inside stars container */
+        .stars-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            will-change: transform;
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        #starsLayerBack { z-index: 0; }
+        #starsLayerFront { z-index: 1; }
         
         .star {
             position: absolute;
@@ -2156,7 +2220,7 @@
             min-height: 100vh;
             background: transparent; /* Usunięte tło - niech gwiazdy świecą przez */
             color: white;
-            padding: 100px 20px 60px; /* Zmniejszony dolny padding z 100px do 60px */
+            padding: 100px 0 60px; /* Usunięty padding poziomy - karuzele do krawędzi */
             overflow-x: hidden; /* Tylko poziome overflow ukryte */
             position: relative;
             z-index: 2;
@@ -2166,6 +2230,7 @@
             max-width: 1400px;
             margin: 0 auto;
             text-align: center;
+            padding: 0 20px; /* Padding tylko dla tytułu i napisu */
         }
         
         .art-title {
@@ -2219,20 +2284,22 @@
         
         /* Karuzela */
         .carousel-container {
-            width: 100%;
+            width: 100vw; /* Pełna szerokość viewport */
             overflow: hidden;
-            margin: 40px 0;
+            margin: 4px 0; /* Zmniejszony odstęp między karuzelami jeszcze bardziej */
             position: relative;
+            left: 50%; /* Wyśrodkowanie relative do rodzica */
+            transform: translateX(-50%); /* Przesunięcie do środka */
         }
         
         .carousel-row {
             display: flex;
-            gap: 30px;
+            gap: 12px; /* Zmniejszony gap między obrazkami o połowę */
             width: max-content;
             flex-wrap: nowrap;
             will-change: transform;
             /* ultra smooth animation with GPU acceleration */
-            animation: marquee 60s linear infinite; /* Zwiększone z 35s do 60s */
+            animation: marquee 75s linear infinite; /* slower on desktop */
             transform: translateZ(0); /* Force GPU acceleration */
             backface-visibility: hidden; /* Smooth rendering */
             perspective: 1000px; /* 3D acceleration */
@@ -2240,7 +2307,7 @@
 
         .carousel-row.reverse {
             /* reverse row slightly slower for visual contrast */
-            animation-duration: 80s; /* Zwiększone z 45s do 80s */
+            animation-duration: 100s; /* slower on desktop */
             animation-direction: reverse;
             transform: translateZ(0); /* Force GPU acceleration */
             backface-visibility: hidden;
@@ -2292,7 +2359,7 @@
         .art-item img {
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            object-fit: cover;
             object-position: center;
             transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
             transform: translateZ(0);
@@ -2319,20 +2386,22 @@
         
         /* Karuzela - dwa rzędy z przeciwnymi animacjami */
         .carousel-container {
-            width: 100%;
+            width: 100vw; /* Pełna szerokość viewport */
             overflow: hidden;
-            margin: 40px 0;
+            margin: 4px 0; /* Zmniejszony odstęp między karuzelami jeszcze bardziej */
             position: relative;
+            left: 50%; /* Wyśrodkowanie relative do rodzica */
+            transform: translateX(-50%); /* Przesunięcie do środka */
         }
 
         .carousel-row {
             display: flex;
-            gap: 30px;
+            gap: 24px;
             width: max-content;
             flex-wrap: nowrap;
             will-change: transform;
             /* ultra smooth animation with GPU acceleration */
-            animation: marquee 60s linear infinite; /* Zwiększone z 35s do 60s */
+            animation: marquee 75s linear infinite; /* slower on desktop */
             transform: translateZ(0); /* Force GPU acceleration */
             backface-visibility: hidden; /* Smooth rendering */
             perspective: 1000px; /* 3D acceleration */
@@ -2340,7 +2409,7 @@
 
         .carousel-row.reverse { 
             /* reverse row slightly slower for visual contrast */
-            animation-duration: 80s; /* Zwiększone z 45s do 80s */
+            animation-duration: 100s; /* slower on desktop */
             animation-direction: reverse;
             transform: translateZ(0); /* Force GPU acceleration */
             backface-visibility: hidden;
@@ -2368,7 +2437,7 @@
         .art-item img {
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            object-fit: cover;
             object-position: center;
             transition: transform 0.3s ease;
             display: block;
@@ -2622,7 +2691,11 @@
         /* Responsive Art */
         @media (max-width: 768px) {
             .art-section {
-                padding: 50px 15px 30px; /* Zmniejszony dolny padding na mobile */
+                padding: 50px 0 30px; /* Usunięty padding poziomy - karuzele do krawędzi */
+            }
+            
+            .art-content {
+                padding: 0 15px; /* Padding tylko dla tytułu */
             }
             
             .art-item {
@@ -2633,20 +2706,20 @@
             .art-item img {
                 width: 100%;
                 height: 100%;
-                object-fit: contain;
+                object-fit: cover;
                 object-position: center;
                 display: block;
             }
             
             .carousel-row {
-                gap: 20px; /* Mniejszy gap na mobile */
-                /* PRZYŚPIESZONA animacja na mobile - JESZCZE SZYBCIEJ */
-                animation-duration: 25s !important; /* Było 60s → 40s → teraz 25s (2.4x szybciej niż desktop) */
+                gap: 10px; /* Zmniejszony gap między obrazkami na mobile */
+                /* PRZYŚPIESZONA animacja na mobile - szybsza */
+                animation-duration: 18s !important;
             }
             
             .carousel-row.reverse {
-                /* Również szybciej dla reverse - JESZCZE SZYBCIEJ */
-                animation-duration: 35s !important; /* Było 80s → 55s → teraz 35s (2.3x szybciej niż desktop) */
+                /* Również szybciej dla reverse */
+                animation-duration: 26s !important;
             }
             
             .art-grid {
@@ -3766,9 +3839,9 @@
         .phase-number {
             width: 70px;
             height: 70px;
-            background: rgba(0, 20, 35, 0.4);
+            background: rgba(0, 25, 40, 0.3);
             backdrop-filter: blur(15px);
-            border: 1px solid rgba(0, 153, 255, 0.2);
+            border: none;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -3780,8 +3853,8 @@
             position: relative;
             overflow: hidden;
             transition: all 0.4s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2),
-                       0 2px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1),
+                       0 2px 6px rgba(0, 0, 0, 0.05);
         }
         
         .phase-number::before {
@@ -3820,16 +3893,16 @@
         
         .phase-content {
             flex: 1;
-            background: rgba(0, 15, 25, 0.4);
+            background: rgba(0, 25, 40, 0.3);
             backdrop-filter: blur(15px);
-            border: 1px solid rgba(0, 153, 255, 0.1);
+            border: none;
             border-radius: 0;
             padding: 2.5rem;
             transition: all 0.4s ease;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2),
-                       0 2px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1),
+                       0 2px 6px rgba(0, 0, 0, 0.05);
         }
         
         .phase-content::before {
@@ -5189,10 +5262,10 @@
                 <div class="nav-section">
                     <div class="nav-links">
                         <a href="#about" class="nav-link">About</a>
-                        <a href="#howto" class="nav-link">Buy</a>
-                        <a href="dashboard/index.html" class="nav-link" style="background: linear-gradient(135deg, var(--core-blue), var(--core-cyan)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900;">DASHBOARD</a>
-                        <a href="#art" class="nav-link">Art</a>
                         <a href="#stats" class="nav-link">Stats</a>
+                        <a href="#art" class="nav-link">Art</a>
+                        <a href="dashboard/index.html" class="nav-link" style="background: linear-gradient(135deg, var(--core-blue), var(--core-cyan)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900;">DASHBOARD</a>
+                        <a href="#howto" class="nav-link">Buy</a>
                         <a href="#whale" class="nav-link desktop-only">Whale</a>
                         <a href="#roadmap" class="nav-link desktop-only">Roadmap</a>
                     </div>
@@ -5201,8 +5274,11 @@
         </div>
     </nav>
 
-    <!-- Animated Stars Background -->
-    <div class="stars-container" id="starsContainer"></div>
+    <!-- Animated Stars Background with Parallax Layers -->
+    <div class="stars-container" id="starsContainer">
+        <div class="stars-layer" id="starsLayerBack"></div>
+        <div class="stars-layer" id="starsLayerFront"></div>
+    </div>
     
     <!-- Custom Cursor -->
     <div class="custom-cursor"></div>
@@ -5400,166 +5476,56 @@
             <!-- Pierwszy rząd karuzeli - porusza się w prawo -->
             <div class="carousel-container">
                 <div class="carousel-row" id="carousel-row-1">
-                    <!-- Duplikaty na początku dla pełnego zapełnienia -->
+                    <!-- Main images -->
                     <div class="art-item">
-                        <img src="images/photo_2025-08-09_15-54-01.jpg" loading="lazy" alt="CORE Art 4">
-                        <div class="art-overlay">
-                            <h3>CORE Genesis</h3>
-                            <p>Digital Art Collection</p>
-                        </div>
-                    </div>
-                    <div class="art-item">
-                        <img src="images/photo_2025-08-10_01-47-44.jpg" loading="lazy" alt="CORE Art 5">
-                        <div class="art-overlay">
-                            <h3>CORE Vision</h3>
-                            <p>Future Concept Art</p>
-                        </div>
-                    </div>
-                    <!-- Oryginalne obrazki -->
-                    <div class="art-item">
-                        <img src="images/photo_2025-08-09_05-08-27.jpg" loading="lazy" alt="CORE Art 1">
-                        <div class="art-overlay">
-                            <h3>CORE Origin</h3>
-                            <p>The Beginning</p>
-                        </div>
-                    </div>
-                    <div class="art-item">
-                        <img src="images/photo_2025-08-09_08-32-31.jpg" loading="lazy" alt="CORE Art 2">
-                        <div class="art-overlay">
-                            <h3>CORE Evolution</h3>
-                            <p>Digital Transformation</p>
-                        </div>
-                    </div>
-                    <div class="art-item">
-                        <img src="images/photo_2025-08-09_10-21-15.jpg" loading="lazy" alt="CORE Art 3">
-                        <div class="art-overlay">
-                            <h3>CORE Reality</h3>
-                            <p>Virtual Dimensions</p>
-                        </div>
-                    </div>
-                    <div class="art-item">
-                        <img src="images/photo_2025-08-09_15-54-01.jpg" loading="lazy" alt="CORE Art 4">
-                        <div class="art-overlay">
-                            <h3>CORE Genesis</h3>
-                            <p>Digital Art Collection</p>
-                        </div>
-                    </div>
-                    <div class="art-item">
-                        <img src="images/photo_2025-08-10_01-47-44.jpg" loading="lazy" alt="CORE Art 5">
-                        <div class="art-overlay">
-                            <h3>CORE Vision</h3>
-                            <p>Future Concept Art</p>
-                        </div>
-                    </div>
-                    <!-- Duplikaty dla płynnej animacji -->
-                    <div class="art-item">
-                        <img src="images/photo_2025-08-09_05-08-27.jpg" loading="lazy" alt="CORE Art 1">
-                        <div class="art-overlay">
-                            <h3>CORE Origin</h3>
-                            <p>The Beginning</p>
-                        </div>
-                    </div>
-                    <div class="art-item">
-                        <img src="images/photo_2025-08-09_08-32-31.jpg" loading="lazy" alt="CORE Art 2">
-                        <div class="art-overlay">
-                            <h3>CORE Evolution</h3>
-                            <p>Digital Transformation</p>
-                        </div>
-                    </div>
-                    <!-- Dodatkowe duplikaty dla pełnego zapełnienia -->
-                    <div class="art-item">
-                        <img src="images/photo_2025-08-09_10-21-15.jpg" loading="lazy" alt="CORE Art 3">
-                        <div class="art-overlay">
-                            <h3>CORE Reality</h3>
-                            <p>Virtual Dimensions</p>
-                        </div>
-                    </div>
-                    <div class="art-item">
-                        <img src="images/photo_2025-08-09_15-54-01.jpg" loading="lazy" alt="CORE Art 4">
-                        <div class="art-overlay">
-                            <h3>CORE Genesis</h3>
-                            <p>Digital Art Collection</p>
-                        </div>
-                    </div>
-                    <div class="art-item">
-                        <img src="images/photo_2025-08-10_01-47-44.jpg" loading="lazy" alt="CORE Art 5">
-                        <div class="art-overlay">
-                            <h3>CORE Vision</h3>
-                            <p>Future Concept Art</p>
-                        </div>
-                    </div>
-                    <!-- Nowe art obrazy - pierwszy rząd -->
-                    <div class="art-item">
-                        <img src="images/core_art_01.jpg" loading="lazy" alt="CORE Art 1">
+                        <img src="images/4IwameWI.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
                             <h3>CORE Essence</h3>
+                            <p>Digital Art</p>
+                        </div>
+                    </div>
+                    <div class="art-item">
+                        <img src="images/AkYNojZV.jpg" loading="lazy" alt="CORE Art">
+                        <div class="art-overlay">
+                            <h3>CORE Vision</h3>
                             <p>Pure Aesthetic</p>
                         </div>
                     </div>
                     <div class="art-item">
-                        <img src="images/core_art_02.jpg" loading="lazy" alt="CORE Art 2">
+                        <img src="images/GnTNwAc8.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
                             <h3>CORE Dreams</h3>
                             <p>Ethereal Visions</p>
                         </div>
                     </div>
                     <div class="art-item">
-                        <img src="images/core_art_03.jpg" loading="lazy" alt="CORE Art 3">
+                        <img src="images/w8-4vmfA.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
-                            <h3>CORE Mystique</h3>
-                            <p>Hidden Depths</p>
+                            <h3>CORE Reality</h3>
+                            <p>Virtual Dimensions</p>
                         </div>
                     </div>
                     <div class="art-item">
-                        <img src="images/core_art_04.jpg" loading="lazy" alt="CORE Art 4">
+                        <img src="images/core_art_12.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
-                            <h3>CORE Harmony</h3>
-                            <p>Perfect Balance</p>
+                            <h3>CORE Metamorphosis</h3>
+                            <p>Transformation</p>
                         </div>
                     </div>
                     <div class="art-item">
-                        <img src="images/core_art_05.jpg" loading="lazy" alt="CORE Art 5">
+                        <img src="images/core_art_21.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
-                            <h3>CORE Radiance</h3>
-                            <p>Inner Light</p>
+                            <h3>CORE Nexus</h3>
+                            <p>Digital Connection</p>
                         </div>
                     </div>
                     <div class="art-item">
-                        <img src="images/core_art_06.jpg" loading="lazy" alt="CORE Art 6">
+                        <img src="images/core_art_22.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
-                            <h3>CORE Serenity</h3>
-                            <p>Peaceful Mind</p>
+                            <h3>CORE Ascension</h3>
+                            <p>Beyond Limits</p>
                         </div>
                     </div>
-                    <div class="art-item">
-                        <img src="images/core_art_07.jpg" loading="lazy" alt="CORE Art 7">
-                        <div class="art-overlay">
-                            <h3>CORE Awakening</h3>
-                            <p>New Consciousness</p>
-                        </div>
-                    </div>
-                    <div class="art-item">
-                        <img src="images/core_art_08.jpg" loading="lazy" alt="CORE Art 8">
-                        <div class="art-overlay">
-                            <h3>CORE Transcendence</h3>
-                            <p>Beyond Reality</p>
-                        </div>
-                    </div>
-                    <div class="art-item">
-                        <img src="images/core_art_09.jpg" loading="lazy" alt="CORE Art 9">
-                        <div class="art-overlay">
-                            <h3>CORE Illuminate</h3>
-                            <p>Divine Spark</p>
-                        </div>
-                    </div>
-                    <div class="art-item">
-                        <img src="images/core_art_10.jpg" loading="lazy" alt="CORE Art 10">
-                        <div class="art-overlay">
-                            <h3>CORE Infinity</h3>
-                            <p>Endless Possibilities</p>
-                        </div>
-                    </div>
-                    <!-- Nowe grafiki CORE -->
                     <div class="art-item">
                         <img src="images/core_cosmic_cat_earth.jpg" loading="lazy" alt="CORE Cosmic Cat">
                         <div class="art-overlay">
@@ -5568,10 +5534,60 @@
                         </div>
                     </div>
                     <div class="art-item">
-                        <img src="images/core_energy_cat_mountain.jpg" loading="lazy" alt="CORE Energy Cat">
+                        <img src="images/core_cosmic_hands.jpg" loading="lazy" alt="CORE Cosmic Hands">
                         <div class="art-overlay">
-                            <h3>CORE Energy</h3>
-                            <p>Mountain Ascension</p>
+                            <h3>CORE Creation</h3>
+                            <p>Divine Hands</p>
+                        </div>
+                    </div>
+                    <div class="art-item">
+                        <img src="images/photo_2025-08-09_05-08-27.jpg" loading="lazy" alt="CORE Art">
+                        <div class="art-overlay">
+                            <h3>CORE Origin</h3>
+                            <p>The Beginning</p>
+                        </div>
+                    </div>
+                    <div class="art-item">
+                        <img src="images/photo_2025-08-09_08-32-31.jpg" loading="lazy" alt="CORE Art">
+                        <div class="art-overlay">
+                            <h3>CORE Evolution</h3>
+                            <p>Digital Transformation</p>
+                        </div>
+                    </div>
+                    <div class="art-item">
+                        <img src="images/photo_2025-08-09_10-21-15.jpg" loading="lazy" alt="CORE Art">
+                        <div class="art-overlay">
+                            <h3>CORE Matrix</h3>
+                            <p>Digital Nexus</p>
+                        </div>
+                    </div>
+                    <!-- Duplicates for seamless loop -->
+                    <div class="art-item">
+                        <img src="images/4IwameWI.jpg" loading="lazy" alt="CORE Art">
+                        <div class="art-overlay">
+                            <h3>CORE Essence</h3>
+                            <p>Digital Art</p>
+                        </div>
+                    </div>
+                    <div class="art-item">
+                        <img src="images/AkYNojZV.jpg" loading="lazy" alt="CORE Art">
+                        <div class="art-overlay">
+                            <h3>CORE Vision</h3>
+                            <p>Pure Aesthetic</p>
+                        </div>
+                    </div>
+                    <div class="art-item">
+                        <img src="images/GnTNwAc8.jpg" loading="lazy" alt="CORE Art">
+                        <div class="art-overlay">
+                            <h3>CORE Dreams</h3>
+                            <p>Ethereal Visions</p>
+                        </div>
+                    </div>
+                    <div class="art-item">
+                        <img src="images/w8-4vmfA.jpg" loading="lazy" alt="CORE Art">
+                        <div class="art-overlay">
+                            <h3>CORE Reality</h3>
+                            <p>Virtual Dimensions</p>
                         </div>
                     </div>
                 </div>
@@ -5580,192 +5596,167 @@
             <!-- Drugi rząd karuzeli - porusza się w lewo -->
             <div class="carousel-container">
                 <div class="carousel-row reverse" id="carousel-row-2">
-                    <!-- Duplikaty na początku dla pełnego zapełnienia -->
+                    <!-- Main images -->
                     <div class="art-item">
-                        <img src="images/photo_2025-08-10_09-20-57.jpg" loading="lazy" alt="CORE Art 9">
-                        <div class="art-overlay">
-                            <h3>CORE Matrix</h3>
-                            <p>Digital Nexus</p>
-                        </div>
-                    </div>
-                    <div class="art-item">
-                        <img src="images/photo_2025-08-11_02-26-03.jpg" loading="lazy" alt="CORE Art 10">
-                        <div class="art-overlay">
-                            <h3>CORE Infinity</h3>
-                            <p>Beyond Reality</p>
-                        </div>
-                    </div>
-                    <!-- Oryginalne obrazki -->
-                    <div class="art-item">
-                        <img src="images/photo_2025-08-10_00-45-08.jpg" loading="lazy" alt="CORE Art 6">
+                        <img src="images/photo_2025-08-10_00-45-08.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
                             <h3>CORE Synthesis</h3>
                             <p>Digital Fusion</p>
                         </div>
                     </div>
                     <div class="art-item">
-                        <img src="images/photo_2025-08-10_01-04-14.jpg" loading="lazy" alt="CORE Art 7">
+                        <img src="images/photo_2025-08-10_00-52-51.jpg" loading="lazy" alt="CORE Art">
+                        <div class="art-overlay">
+                            <h3>CORE Awakening</h3>
+                            <p>New Dawn</p>
+                        </div>
+                    </div>
+                    <div class="art-item">
+                        <img src="images/photo_2025-08-10_00-54-17.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
                             <h3>CORE Transcendence</h3>
                             <p>Higher Dimensions</p>
                         </div>
                     </div>
                     <div class="art-item">
-                        <img src="images/photo_2025-08-10_04-09-16.jpg" loading="lazy" alt="CORE Art 8">
+                        <img src="images/photo_2025-08-10_01-04-14.jpg" loading="lazy" alt="CORE Art">
+                        <div class="art-overlay">
+                            <h3>CORE Harmony</h3>
+                            <p>Perfect Balance</p>
+                        </div>
+                    </div>
+                    <div class="art-item">
+                        <img src="images/photo_2025-08-10_04-09-16.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
                             <h3>CORE Metamorphosis</h3>
                             <p>Digital Evolution</p>
                         </div>
                     </div>
                     <div class="art-item">
-                        <img src="images/photo_2025-08-10_09-20-57.jpg" loading="lazy" alt="CORE Art 9">
+                        <img src="images/photo_2025-08-10_04-09-18.jpg" loading="lazy" alt="CORE Art">
+                        <div class="art-overlay">
+                            <h3>CORE Energy</h3>
+                            <p>Pure Power</p>
+                        </div>
+                    </div>
+                    <div class="art-item">
+                        <img src="images/photo_2025-08-10_04-50-43.jpg" loading="lazy" alt="CORE Art">
+                        <div class="art-overlay">
+                            <h3>CORE Radiance</h3>
+                            <p>Inner Light</p>
+                        </div>
+                    </div>
+                    <div class="art-item">
+                        <img src="images/photo_2025-08-10_05-02-06.jpg" loading="lazy" alt="CORE Art">
+                        <div class="art-overlay">
+                            <h3>CORE Serenity</h3>
+                            <p>Peaceful Mind</p>
+                        </div>
+                    </div>
+                    <div class="art-item">
+                        <img src="images/photo_2025-08-10_09-20-57.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
                             <h3>CORE Matrix</h3>
                             <p>Digital Nexus</p>
                         </div>
                     </div>
                     <div class="art-item">
-                        <img src="images/photo_2025-08-11_02-26-03.jpg" loading="lazy" alt="CORE Art 10">
+                        <img src="images/photo_2025-08-11_02-26-03.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
                             <h3>CORE Infinity</h3>
                             <p>Beyond Reality</p>
                         </div>
                     </div>
-                    <!-- Duplikaty dla płynnej animacji -->
                     <div class="art-item">
-                        <img src="images/photo_2025-08-10_00-45-08.jpg" loading="lazy" alt="CORE Art 6">
+                        <img src="images/photo_2025-08-11_05-00-57.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
-                            <h3>CORE Synthesis</h3>
-                            <p>Digital Fusion</p>
+                            <h3>CORE Ethereal</h3>
+                            <p>Divine Essence</p>
                         </div>
                     </div>
                     <div class="art-item">
-                        <img src="images/photo_2025-08-10_01-04-14.jpg" loading="lazy" alt="CORE Art 7">
+                        <img src="images/photo_2025-08-13_04-06-59.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
-                            <h3>CORE Transcendence</h3>
-                            <p>Higher Dimensions</p>
-                        </div>
-                    </div>
-                    <!-- Dodatkowe duplikaty dla pełnego zapełnienia -->
-                    <div class="art-item">
-                        <img src="images/photo_2025-08-10_04-09-16.jpg" loading="lazy" alt="CORE Art 8">
-                        <div class="art-overlay">
-                            <h3>CORE Metamorphosis</h3>
-                            <p>Digital Evolution</p>
+                            <h3>CORE Mystique</h3>
+                            <p>Hidden Depths</p>
                         </div>
                     </div>
                     <div class="art-item">
-                        <img src="images/photo_2025-08-10_09-20-57.jpg" loading="lazy" alt="CORE Art 9">
+                        <img src="images/photo_2025-08-31_05-09-35.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
-                            <h3>CORE Matrix</h3>
-                            <p>Digital Nexus</p>
+                            <h3>CORE Vision</h3>
+                            <p>Future Sight</p>
                         </div>
                     </div>
                     <div class="art-item">
-                        <img src="images/photo_2025-08-11_02-26-03.jpg" loading="lazy" alt="CORE Art 10">
+                        <img src="images/photo_2025-09-02_02-04-45.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
-                            <h3>CORE Infinity</h3>
-                            <p>Beyond Reality</p>
-                        </div>
-                    </div>
-                    <!-- Nowe art obrazy - drugi rząd -->
-                    <div class="art-item">
-                        <img src="images/core_art_11.jpg" loading="lazy" alt="CORE Art 11">
-                        <div class="art-overlay">
-                            <h3>CORE Sanctuary</h3>
-                            <p>Sacred Space</p>
+                            <h3>CORE Dreams</h3>
+                            <p>Ethereal Visions</p>
                         </div>
                     </div>
                     <div class="art-item">
-                        <img src="images/core_art_12.jpg" loading="lazy" alt="CORE Art 12">
+                        <img src="images/photo_2025-09-25_21-45-51.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
-                            <h3>CORE Metamorphosis</h3>
-                            <p>Transformation</p>
+                            <h3>CORE Illuminate</h3>
+                            <p>Divine Spark</p>
                         </div>
                     </div>
                     <div class="art-item">
-                        <img src="images/core_art_13.jpg" loading="lazy" alt="CORE Art 13">
-                        <div class="art-overlay">
-                            <h3>CORE Elysium</h3>
-                            <p>Paradise Found</p>
-                        </div>
-                    </div>
-                    <div class="art-item">
-                        <img src="images/core_art_14.jpg" loading="lazy" alt="CORE Art 14">
-                        <div class="art-overlay">
-                            <h3>CORE Resonance</h3>
-                            <p>Vibrant Energy</p>
-                        </div>
-                    </div>
-                    <div class="art-item">
-                        <img src="images/core_art_15.jpg" loading="lazy" alt="CORE Art 15">
-                        <div class="art-overlay">
-                            <h3>CORE Nirvana</h3>
-                            <p>Ultimate Peace</p>
-                        </div>
-                    </div>
-                    <div class="art-item">
-                        <img src="images/core_art_16.jpg" loading="lazy" alt="CORE Art 16">
-                        <div class="art-overlay">
-                            <h3>CORE Enigma</h3>
-                            <p>Mystery Unveiled</p>
-                        </div>
-                    </div>
-                    <div class="art-item">
-                        <img src="images/core_art_17.jpg" loading="lazy" alt="CORE Art 17">
-                        <div class="art-overlay">
-                            <h3>CORE Zenith</h3>
-                            <p>Peak Expression</p>
-                        </div>
-                    </div>
-                    <div class="art-item">
-                        <img src="images/core_art_18.jpg" loading="lazy" alt="CORE Art 18">
-                        <div class="art-overlay">
-                            <h3>CORE Reverie</h3>
-                            <p>Dreamlike State</p>
-                        </div>
-                    </div>
-                    <div class="art-item">
-                        <img src="images/core_art_19.jpg" loading="lazy" alt="CORE Art 19">
+                        <img src="images/photo_2025-10-05_08-51-05.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
                             <h3>CORE Celestial</h3>
                             <p>Heavenly Realm</p>
                         </div>
                     </div>
                     <div class="art-item">
-                        <img src="images/core_art_20.jpg" loading="lazy" alt="CORE Art 20">
+                        <img src="images/photo_2025-10-16_20-01-31.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
                             <h3>CORE Eternity</h3>
                             <p>Timeless Beauty</p>
                         </div>
                     </div>
                     <div class="art-item">
-                        <img src="images/core_art_21.jpg" loading="lazy" alt="CORE Art 21">
+                        <img src="images/photo_2025-10-17_15-36-38.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
-                            <h3>CORE Nexus</h3>
-                            <p>Digital Connection</p>
+                            <h3>CORE Resonance</h3>
+                            <p>Vibrant Energy</p>
                         </div>
                     </div>
                     <div class="art-item">
-                        <img src="images/core_art_22.jpg" loading="lazy" alt="CORE Art 22">
+                        <img src="images/photo_2025-10-17_15-36-53.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
                             <h3>CORE Ascension</h3>
-                            <p>Beyond Limits</p>
+                            <p>Rise Above</p>
                         </div>
                     </div>
-                    <!-- Więcej nowych grafik CORE -->
+                    <!-- Duplicates for seamless loop -->
                     <div class="art-item">
-                        <img src="images/core_cosmic_hands.jpg" loading="lazy" alt="CORE Cosmic Hands">
+                        <img src="images/photo_2025-08-10_00-45-08.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
-                            <h3>CORE Creation</h3>
-                            <p>Divine Hands</p>
+                            <h3>CORE Synthesis</h3>
+                            <p>Digital Fusion</p>
                         </div>
                     </div>
                     <div class="art-item">
-                        <img src="images/core_trading_card.jpg" loading="lazy" alt="CORE Trading Card">
+                        <img src="images/photo_2025-08-10_00-52-51.jpg" loading="lazy" alt="CORE Art">
                         <div class="art-overlay">
-                            <h3>CORE Card</h3>
-                            <p>Legendary NFT</p>
+                            <h3>CORE Awakening</h3>
+                            <p>New Dawn</p>
+                        </div>
+                    </div>
+                    <div class="art-item">
+                        <img src="images/photo_2025-08-10_00-54-17.jpg" loading="lazy" alt="CORE Art">
+                        <div class="art-overlay">
+                            <h3>CORE Transcendence</h3>
+                            <p>Higher Dimensions</p>
+                        </div>
+                    </div>
+                    <div class="art-item">
+                        <img src="images/photo_2025-08-10_01-04-14.jpg" loading="lazy" alt="CORE Art">
+                        <div class="art-overlay">
+                            <h3>CORE Harmony</h3>
+                            <p>Perfect Balance</p>
                         </div>
                     </div>
                 </div>
@@ -6263,9 +6254,12 @@
         });
 
         // Ultra Smooth Local Mouse-Reactive Stars
-        class LocalMouseReactiveStars {
+    class LocalMouseReactiveStars {
             constructor() {
-                this.container = document.getElementById('starsContainer');
+        this.container = document.getElementById('starsContainer');
+        this.layerBack = document.getElementById('starsLayerBack');
+        this.layerFront = document.getElementById('starsLayerFront');
+        this.hasLayers = !!(this.layerBack && this.layerFront);
                 this.stars = [];
                 // ⚡ OPTYMALIZACJA WYDAJNOŚCI - minimalistyczna liczba gwiazd
                 // Inspiracja: corecoreonsol.xyz - mniej = więcej elegancji
@@ -6304,13 +6298,27 @@
                 const viewportHeight = window.innerHeight;
                 
                 const fragment = document.createDocumentFragment();
+                const fragBack = document.createDocumentFragment();
+                const fragFront = document.createDocumentFragment();
                 
                 for (let i = 0; i < this.numStars; i++) {
                     const star = this.createStar(i, viewportWidth, viewportHeight);
-                    fragment.appendChild(star);
+                    // If we have layers, distribute stars between back and front
+                    if (this.hasLayers) {
+                        const toBack = Math.random() < 0.65; // ~65% in back, 35% in front
+                        star.dataset.layer = toBack ? 'back' : 'front';
+                        if (toBack) fragBack.appendChild(star); else fragFront.appendChild(star);
+                    } else {
+                        fragment.appendChild(star);
+                    }
                 }
                 
-                this.container.appendChild(fragment);
+                if (this.hasLayers) {
+                    this.layerBack.appendChild(fragBack);
+                    this.layerFront.appendChild(fragFront);
+                } else {
+                    this.container.appendChild(fragment);
+                }
                 
                 // Enable transitions after all stars are positioned
                 requestAnimationFrame(() => {
@@ -6482,7 +6490,12 @@
                 // Debounce resize for performance
                 clearTimeout(this.resizeTimeout);
                 this.resizeTimeout = setTimeout(() => {
-                    this.container.innerHTML = '';
+                    if (this.hasLayers) {
+                        this.layerBack.innerHTML = '';
+                        this.layerFront.innerHTML = '';
+                    } else {
+                        this.container.innerHTML = '';
+                    }
                     this.stars = [];
                     
                     // Adjust star count based on new screen size - MINIMALISTYCZNE LICZBY
@@ -6512,6 +6525,36 @@
             if (starsContainer) {
                 const localMouseStars = new LocalMouseReactiveStars();
                 console.log('✨ Stars initialized immediately on DOM ready');
+
+                // Parallax scroll handling for layered stars
+                const back = document.getElementById('starsLayerBack');
+                const front = document.getElementById('starsLayerFront');
+                if (back && front) {
+                    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    if (prefersReducedMotion) {
+                        console.log('♿ Reduced motion enabled - parallax disabled');
+                        return;
+                    }
+                    let ticking = false;
+                    const updateParallax = () => {
+                        const y = window.scrollY || window.pageYOffset || 0;
+                        // Move layers in opposite directions (subtle factors)
+                        const backOffset = y * -0.08;  // moves up as you scroll down
+                        const frontOffset = y * 0.12;  // moves down as you scroll down
+                        back.style.transform = `translate3d(0, ${backOffset.toFixed(2)}px, 0)`;
+                        front.style.transform = `translate3d(0, ${frontOffset.toFixed(2)}px, 0)`;
+                        ticking = false;
+                    };
+                    const onScroll = () => {
+                        if (!ticking) {
+                            window.requestAnimationFrame(updateParallax);
+                            ticking = true;
+                        }
+                    };
+                    // Initialize once and bind
+                    updateParallax();
+                    window.addEventListener('scroll', onScroll, { passive: true });
+                }
             } else {
                 console.error('⚠️ Stars container not found');
             }
@@ -7239,33 +7282,188 @@
             }, 1000);
         });
         
-        // Smooth scroll navigation
+        // Enhanced smooth scroll navigation with aggressive debugging
         function initNavigation() {
+            console.log('🚀 InitNavigation called');
+            
+            // CRITICAL: Test if scroll is working at all
+            console.log('🧪 Testing scroll capability...');
+            const originalScroll = window.pageYOffset;
+            
+            // FORCE CLEAR ALL POTENTIAL BLOCKERS
+            document.body.style.height = 'auto';
+            document.documentElement.style.height = 'auto';
+            document.body.style.overflow = 'auto';
+            document.documentElement.style.overflow = 'auto';
+            document.body.style.position = 'static';
+            document.documentElement.style.position = 'static';
+            
+            // Remove any event listeners that might prevent scroll
+            document.body.style.touchAction = 'auto';
+            document.documentElement.style.touchAction = 'auto';
+            
+            console.log('🔧 Forced clear all scroll blockers');
+            
+            window.scrollTo(0, 50);
+            
+            setTimeout(() => {
+                const testScroll = window.pageYOffset;
+                console.log(`🧪 Scroll test: ${originalScroll} → ${testScroll} (${testScroll === 50 ? 'WORKING' : 'STILL BLOCKED'})`);
+                
+                if (testScroll !== 50) {
+                    console.error('🚨 SCROLL IS COMPLETELY BLOCKED! Investigating...');
+                    console.log('📊 body.style.overflow:', document.body.style.overflow);
+                    console.log('📊 html.style.overflow:', document.documentElement.style.overflow);
+                    console.log('📊 body.style.height:', document.body.style.height);
+                    console.log('📊 html.style.height:', document.documentElement.style.height);
+                    console.log('📊 body.style.position:', document.body.style.position);
+                    console.log('📊 body clientHeight vs scrollHeight:', document.body.clientHeight, 'vs', document.body.scrollHeight);
+                }
+                
+                window.scrollTo(0, originalScroll); // Restore original position
+                
+                // Force ensure scroll is enabled
+                document.body.style.overflow = 'auto';
+                document.documentElement.style.overflow = 'auto';
+                console.log('🔓 Scroll overflow forced to auto');
+            }, 100);
+            
             const navLinks = document.querySelectorAll('.nav-link[href^="#"]');
             const navbar = document.querySelector('.sci-fi-nav');
+            
+            console.log(`📋 Found ${navLinks.length} nav links:`, navLinks);
+            console.log('🧭 Navbar element:', navbar);
+            
+            // List all found links
+            navLinks.forEach((link, index) => {
+                console.log(`  ${index + 1}. Link: ${link.href} -> ${link.getAttribute('href')}`);
+            });
             
             // Ensure navbar doesn't interfere with cursor during load
             setTimeout(() => {
                 if (navbar) {
                     navbar.style.pointerEvents = 'auto';
+                    console.log('✅ Navbar pointer-events set to auto');
                 }
             }, 2000); // After animation completes
             
-            navLinks.forEach(link => {
+            // Add click listeners with detailed debugging
+            navLinks.forEach((link, index) => {
+                console.log(`🔗 Adding listener to link ${index + 1}: ${link.getAttribute('href')}`);
+                
                 link.addEventListener('click', (e) => {
+                    console.log('🎯 CLICK DETECTED!', e);
                     e.preventDefault();
-                    const targetId = link.getAttribute('href').substring(1);
+                    e.stopPropagation();
+                    
+                    // FORCE RESTORE SCROLL - critical fix
+                    document.body.style.overflow = 'auto';
+                    document.documentElement.style.overflow = 'auto';
+                    
+                    // Temporarily disable ALL scroll-related CSS that might interfere
+                    document.documentElement.style.scrollBehavior = 'auto';
+                    document.documentElement.style.scrollSnapType = 'none';
+                    document.body.style.scrollSnapType = 'none';
+                    
+                    console.log('🔓 Scroll forcefully restored and CSS cleared');
+                    
+                    const href = link.getAttribute('href');
+                    const targetId = href.substring(1);
                     const targetElement = document.getElementById(targetId);
                     
+                    console.log(`🔗 Navigation clicked: ${targetId}`, targetElement);
+                    console.log(`📍 Target element found:`, !!targetElement);
+                    
                     if (targetElement) {
-                        const offsetTop = targetElement.offsetTop - 100; // Account for nav height
-                        window.scrollTo({
-                            top: offsetTop,
-                            behavior: 'smooth'
+                        console.log('🎬 Starting scroll animation...');
+                        console.log('📊 Current scroll before:', window.pageYOffset);
+                        console.log('📊 Target element position:', targetElement.offsetTop);
+                        
+                        // Close any open modals that might block scroll
+                        const modals = document.querySelectorAll('[id*="modal"], [class*="modal"]');
+                        modals.forEach(modal => {
+                            if (modal.style.display === 'block') {
+                                modal.style.display = 'none';
+                                console.log('🚪 Closed modal:', modal.id || modal.className);
+                            }
                         });
+                        
+                        // Try multiple scroll methods
+                        console.log('🎯 Method 1: scrollIntoView...');
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start',
+                            inline: 'nearest'
+                        });
+                        
+                        // Method 2: Direct window.scrollTo
+                        setTimeout(() => {
+                            console.log('🎯 Method 2: window.scrollTo...');
+                            window.scrollTo({
+                                top: targetElement.offsetTop - 80,
+                                left: 0,
+                                behavior: 'smooth'
+                            });
+                        }, 100);
+                        
+                        // Method 3: FORCE IMMEDIATE SCROLL (no smooth)
+                        setTimeout(() => {
+                            console.log('🎯 Method 3: FORCE immediate scroll...');
+                            window.scrollTo(0, targetElement.offsetTop - 80);
+                            
+                            // Method 4: ULTIMATE FALLBACK - move the page content
+                            setTimeout(() => {
+                                const currentScroll = window.pageYOffset;
+                                console.log('📊 After force scroll:', currentScroll);
+                                
+                                if (Math.abs(currentScroll - (targetElement.offsetTop - 80)) > 50) {
+                                    console.log('🚨 ULTIMATE FALLBACK: Moving page content...');
+                                    document.body.style.transform = `translateY(-${targetElement.offsetTop - 80}px)`;
+                                    document.body.style.transition = 'transform 0.8s ease-out';
+                                    
+                                    // Reset transform after scroll simulation
+                                    setTimeout(() => {
+                                        document.body.style.transform = '';
+                                        document.body.style.transition = '';
+                                        window.scrollTo(0, targetElement.offsetTop - 80);
+                                    }, 800);
+                                }
+                            }, 100);
+                        }, 200);
+                        
+                        // Verify scroll after 100ms
+                        setTimeout(() => {
+                            console.log('📊 Scroll after 100ms:', window.pageYOffset);
+                            
+                            // If scroll didn't work, try alternative method
+                            if (Math.abs(window.pageYOffset - targetElement.offsetTop) > 100) {
+                                console.log('🔄 Method 2: Direct scroll...');
+                                window.scrollTo({
+                                    top: targetElement.offsetTop - 80,
+                                    left: 0,
+                                    behavior: 'smooth'
+                                });
+                            }
+                        }, 100);
+                        
+                        // Final verification after 1 second
+                        setTimeout(() => {
+                            console.log('📊 Final scroll position:', window.pageYOffset);
+                            console.log('📊 Target should be at:', targetElement.offsetTop - 80);
+                        }, 1000);
+                        
+                    } else {
+                        console.warn(`❌ Target element not found: ${targetId}`);
+                        console.log('🔍 Available elements with IDs:', 
+                            Array.from(document.querySelectorAll('[id]')).map(el => el.id));
                     }
-                });
+                }, { passive: false });
+                
+                // Test if event listener was added
+                console.log(`✅ Event listener added to link ${index + 1}`);
             });
+            
+            console.log(`✅ Navigation initialization complete - ${navLinks.length} links processed`);
         }
         
         // NAVBAR SCROLL MOVED TO INLINE INITIALIZATION
@@ -7282,7 +7480,57 @@
 
             new CoreCarousel();
             window.artGallery = new ArtGallery();
+            
+            // Primary navigation initialization
             initNavigation();
+            
+            // BACKUP: Force navigation initialization after small delay
+            setTimeout(() => {
+                console.log('🔄 Backup navigation initialization...');
+                initNavigation();
+                
+                // EMERGENCY: Direct event binding as final fallback
+                const emergencyLinks = document.querySelectorAll('a[href^="#"]');
+                console.log(`🚨 Emergency binding for ${emergencyLinks.length} anchor links`);
+                
+                emergencyLinks.forEach((link, i) => {
+                    const href = link.getAttribute('href');
+                    if (href && href.startsWith('#') && href.length > 1) {
+                        console.log(`🔧 Emergency binding link ${i}: ${href}`);
+                        
+                        link.addEventListener('click', function(e) {
+                            console.log('🚨 EMERGENCY CLICK:', href);
+                            e.preventDefault();
+                            
+                            // FORCE RESTORE SCROLL - emergency fix
+                            document.body.style.overflow = 'auto';
+                            document.documentElement.style.overflow = 'auto';
+                            
+                            const targetId = href.substring(1);
+                            const target = document.getElementById(targetId);
+                            
+                            if (target) {
+                                console.log('🎯 Emergency scroll to:', targetId);
+                                console.log('📊 Emergency: Current scroll:', window.pageYOffset);
+                                console.log('📊 Emergency: Target position:', target.offsetTop);
+                                
+                                // Force immediate scroll without smooth behavior first
+                                window.scrollTo(0, target.offsetTop - 80);
+                                
+                                // Then apply smooth scroll
+                                setTimeout(() => {
+                                    target.scrollIntoView({ 
+                                        behavior: 'smooth', 
+                                        block: 'start' 
+                                    });
+                                }, 50);
+                            } else {
+                                console.error('❌ Emergency: Target not found:', targetId);
+                            }
+                        });
+                    }
+                });
+            }, 3000); // 3 second delay to ensure everything is loaded
             
             // BACKUP: Additional modal close listener for extra reliability
             document.addEventListener('click', function(e) {
@@ -7483,127 +7731,104 @@
         document.addEventListener('DOMContentLoaded', () => {
             new ArtLightbox();
             
-            // Enhanced smooth scroll animations - faster and more responsive bidirectional
+            // One-way scroll animations - animate only once when first visible
             const observerOptions = {
-                threshold: [0.05, 0.15, 0.25, 0.35], // More thresholds for smoother detection
-                rootMargin: '-10px 0px -10px 0px' // Symmetric margins for equal up/down behavior
+                threshold: [0.1], // Single threshold for clean detection
+                rootMargin: '0px 0px -50px 0px' // Only trigger when element is well into viewport
             };
+            
+            // Track animated elements to prevent re-animation
+            const animatedElements = new Set();
             
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    if (entry.isIntersecting && entry.intersectionRatio >= 0.1) {
-                        // Element enters viewport - animate in (fast response)
+                    // Only animate if element is intersecting AND hasn't been animated before
+                    if (entry.isIntersecting && !animatedElements.has(entry.target)) {
+                        // Mark as animated
+                        animatedElements.add(entry.target);
+                        
+                        // Add animate class
                         entry.target.classList.add('animate');
                         
-                        // For stat-boxes - faster staggered animation
+                        // For stat-boxes - staggered animation
                         if (entry.target.classList.contains('stats-grid')) {
                             const statBoxes = entry.target.querySelectorAll('.stat-box');
                             statBoxes.forEach((box, index) => {
                                 setTimeout(() => {
                                     box.classList.add('animate');
-                                }, index * 80); // Faster: reduced from 100ms to 80ms
+                                    animatedElements.add(box);
+                                }, index * 80);
                             });
                         }
                         
-                        // For profile cards carousel - faster stagger
+                        // For profile cards carousel
                         if (entry.target.classList.contains('carousel-scroll')) {
                             const cards = entry.target.querySelectorAll('.profile-card');
                             cards.forEach((card, index) => {
                                 setTimeout(() => {
                                     card.classList.add('animate');
-                                }, index * 60); // Faster: reduced from 80ms to 60ms
+                                    animatedElements.add(card);
+                                }, index * 60);
                             });
                         }
                         
-                        // For steps grid - faster stagger
+                        // For steps grid
                         if (entry.target.classList.contains('steps-grid')) {
                             const stepItems = entry.target.querySelectorAll('.step-item');
                             stepItems.forEach((item, index) => {
                                 setTimeout(() => {
                                     item.classList.add('animate');
-                                }, index * 70); // Faster: reduced from 120ms to 70ms
+                                    animatedElements.add(item);
+                                }, index * 70);
                             });
                         }
                         
-                        // For art grid - faster stagger
+                        // For art grid
                         if (entry.target.classList.contains('art-grid')) {
                             const artItems = entry.target.querySelectorAll('.art-item');
                             artItems.forEach((item, index) => {
                                 setTimeout(() => {
                                     item.classList.add('animate');
-                                }, index * 50); // Faster: reduced from 60ms to 50ms
+                                    animatedElements.add(item);
+                                }, index * 50);
                             });
                         }
                         
-                        // For carousel-container in art section - faster
+                        // For carousel-container in art section
                         if (entry.target.classList.contains('carousel-container') && entry.target.closest('.art-section')) {
                             const artItems = entry.target.querySelectorAll('.art-item');
                             artItems.forEach((item, index) => {
                                 setTimeout(() => {
                                     item.classList.add('animate');
-                                }, index * 50); // Faster: reduced from 80ms to 50ms
+                                    animatedElements.add(item);
+                                }, index * 50);
                             });
                         }
                         
-                        // For core types grid - faster stagger
+                        // For core types grid
                         if (entry.target.classList.contains('core-types-grid')) {
                             const typeItems = entry.target.querySelectorAll('.core-type-item');
                             typeItems.forEach((item, index) => {
                                 setTimeout(() => {
                                     item.classList.add('animate');
-                                }, index * 60); // Faster: reduced from 100ms to 60ms
+                                    animatedElements.add(item);
+                                }, index * 60);
                             });
                         }
                         
-                        // For roadmap-timeline - faster stagger
+                        // For roadmap-timeline
                         if (entry.target.classList.contains('roadmap-timeline')) {
                             const phaseItems = entry.target.querySelectorAll('.phase-item');
                             phaseItems.forEach((item, index) => {
                                 setTimeout(() => {
                                     item.classList.add('animate');
-                                }, index * 80); // Faster: reduced from 120ms to 80ms
+                                    animatedElements.add(item);
+                                }, index * 80);
                             });
                         }
                         
-                    } else if (!entry.isIntersecting || entry.intersectionRatio < 0.05) {
-                        // Element exits viewport - animate out (faster response for both directions)
-                        entry.target.classList.remove('animate');
-                        
-                        // Remove animate class from child elements immediately
-                        if (entry.target.classList.contains('stats-grid')) {
-                            const statBoxes = entry.target.querySelectorAll('.stat-box');
-                            statBoxes.forEach(box => box.classList.remove('animate'));
-                        }
-                        
-                        if (entry.target.classList.contains('carousel-scroll')) {
-                            const cards = entry.target.querySelectorAll('.profile-card');
-                            cards.forEach(card => card.classList.remove('animate'));
-                        }
-                        
-                        if (entry.target.classList.contains('steps-grid')) {
-                            const stepItems = entry.target.querySelectorAll('.step-item');
-                            stepItems.forEach(item => item.classList.remove('animate'));
-                        }
-                        
-                        if (entry.target.classList.contains('art-grid')) {
-                            const artItems = entry.target.querySelectorAll('.art-item');
-                            artItems.forEach(item => item.classList.remove('animate'));
-                        }
-                        
-                        if (entry.target.classList.contains('carousel-container') && entry.target.closest('.art-section')) {
-                            const artItems = entry.target.querySelectorAll('.art-item');
-                            artItems.forEach(item => item.classList.remove('animate'));
-                        }
-                        
-                        if (entry.target.classList.contains('core-types-grid')) {
-                            const typeItems = entry.target.querySelectorAll('.core-type-item');
-                            typeItems.forEach(item => item.classList.remove('animate'));
-                        }
-                        
-                        if (entry.target.classList.contains('roadmap-timeline')) {
-                            const phaseItems = entry.target.querySelectorAll('.phase-item');
-                            phaseItems.forEach(item => item.classList.remove('animate'));
-                        }
+                        // Stop observing this element after animation
+                        observer.unobserve(entry.target);
                     }
                 });
             }, observerOptions);

@@ -1630,6 +1630,8 @@
                     const reader = new FileReader();
                     reader.onload = (event) => {
                         uploadedPfpImage = new Image();
+                        // crossOrigin nie jest potrzebny dla data URLs z FileReader
+                        // uploadedPfpImage.crossOrigin = 'anonymous';
                         uploadedPfpImage.onload = () => {
                             pfpMainArea.style.backgroundImage = `url('${event.target.result}')`;
                             pfpMainArea.style.backgroundSize = 'cover';
@@ -1652,6 +1654,8 @@
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     uploadedPfpImage = new Image();
+                    // crossOrigin nie jest potrzebny dla data URLs z FileReader
+                    // uploadedPfpImage.crossOrigin = 'anonymous';
                     uploadedPfpImage.onload = () => {
                         pfpMainArea.style.backgroundImage = `url('${event.target.result}')`;
                         pfpMainArea.style.backgroundSize = 'cover';
@@ -1938,7 +1942,48 @@
                     ctx.imageSmoothingQuality = 'high';
                     ctx.clearRect(0, 0, targetW, targetH);
                     ctx.drawImage(this.logoImage, 0, 0, targetW, targetH);
-                    const dataUrl = off.toDataURL('image/png');
+                    let dataUrl;
+                    try {
+                        // Primary path: read from canvas (will throw if tainted)
+                        dataUrl = off.toDataURL('image/png');
+                    } catch (taintErr) {
+                        // If tainted (e.g., SVG loaded in a way that taints canvas), try sanitizing by reloading SVG as a data URL
+                        console.warn('Logo rasterization tainted; attempting SVG sanitize reload:', taintErr.message);
+                        try {
+                            const src = this.logoImage.src || 'corelogo.svg';
+                            let svgText = null;
+                            // Prefer to fetch the original SVG text (same-origin)
+                            try {
+                                const resp = await fetch(src);
+                                if (resp.ok) {
+                                    svgText = await resp.text();
+                                }
+                            } catch (_) { /* ignore */ }
+                            // If fetch failed and the src looks like a relative corelogo path, try that directly
+                            if (!svgText && !/^data:/i.test(src)) {
+                                try {
+                                    const resp2 = await fetch('corelogo.svg');
+                                    if (resp2.ok) svgText = await resp2.text();
+                                } catch (_) { /* ignore */ }
+                            }
+                            if (svgText) {
+                                const safeUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText);
+                                const tmpImg = new Image();
+                                await new Promise((resolve, reject) => { tmpImg.onload = resolve; tmpImg.onerror = reject; tmpImg.src = safeUrl; });
+                                // Draw sanitized image and read again
+                                ctx.clearRect(0, 0, targetW, targetH);
+                                ctx.drawImage(tmpImg, 0, 0, targetW, targetH);
+                                dataUrl = off.toDataURL('image/png');
+                            }
+                        } catch (sanitizeErr) {
+                            console.warn('SVG sanitize reload failed:', sanitizeErr);
+                        }
+                    }
+                    if (!dataUrl) {
+                        // As a final fallback, leave bitmap null; caller may draw SVG directly (with possible taint)
+                        this.logoBitmap = null;
+                        return;
+                    }
                     const img = new Image();
                     await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; img.src = dataUrl; });
                     this.logoBitmap = img;
@@ -2229,6 +2274,8 @@
                 if (result.image) {
                     // Load transformed image
                     const transformedImg = new Image();
+                    // crossOrigin nie jest potrzebny dla data URLs z base64
+                    // transformedImg.crossOrigin = 'anonymous';
                     transformedImg.onload = () => {
                         this.currentMedia = transformedImg;
                         this.mediaType = 'image'; // Now it's an image
@@ -2254,6 +2301,8 @@
                 if (fileType === 'image') {
                     this.mediaType = 'image';
                     const img = new Image();
+                    // crossOrigin nie jest potrzebny dla blob URLs z uploadowanych plików
+                    // img.crossOrigin = 'anonymous';
                     img.onload = () => {
                         console.log('Image loaded successfully:', img.width, 'x', img.height);
                         this.currentMedia = img;
@@ -2272,6 +2321,8 @@
                     // Critical mobile video settings
                     video.setAttribute('playsinline', ''); // Required for iOS
                     video.setAttribute('webkit-playsinline', ''); // Required for older iOS
+                    // crossOrigin nie jest potrzebny dla blob URLs z uploadowanych plików
+                    // video.crossOrigin = 'anonymous';
                     video.muted = true;
                     video.loop = true;
                     video.preload = 'auto';
@@ -2533,10 +2584,14 @@
                 // Ensure logo image exists
                 if (!this.logoImage) {
                     this.logoImage = new Image();
+                    // Nie używamy crossOrigin dla lokalnych plików SVG
+                    // this.logoImage.crossOrigin = 'anonymous';  
                     this.logoImage.onload = async () => {
                         this.logoImageLoaded = true;
                         this.computeLogoAnchor();
                         await this.ensureLogoAspectRatio();
+                        // Rasterize SVG to bitmap to avoid mobile/iOS drawImage distortions
+                        await this.rasterizeLogoBitmap();
                         const logoWidth = 200;
                         const logoHeight = logoWidth / (this.logoAspectRatio || 1);
                         this.logo = { x: 0, y: 0, width: logoWidth, height: logoHeight, opacity: 1 };
@@ -2555,15 +2610,27 @@
                         }
                         this.centerLogo();
                     };
-                    this.logoImage.onerror = () => {
-                        console.error('Failed to load logo image');
-                        alert('Failed to load logo. Please check if corelogo.svg exists.');
+                    this.logoImage.onerror = (error) => {
+                        console.error('Failed to load logo image:', error);
+                        console.log('Trying to load logo from:', this.logoImage.src);
+                        alert('Failed to load logo. Please check if corelogo.svg exists in the same folder.');
                     };
-                    this.logoImage.src = 'corelogo.svg';
+                    // Load SVG as same-origin data URL to avoid any cross-origin taint
+                    fetch('corelogo.svg')
+                        .then(resp => resp.ok ? resp.text() : Promise.reject(new Error('HTTP ' + resp.status)))
+                        .then(svgText => {
+                            const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText);
+                            this.logoImage.src = dataUrl;
+                        })
+                        .catch(() => {
+                            // Fallback to direct path if fetch fails (e.g., older environments)
+                            this.logoImage.src = 'corelogo.svg';
+                        });
                 } else {
                     // If already instantiated image and possibly cached
                     if (this.logoImage.complete) {
                         await this.ensureLogoAspectRatio();
+                        await this.rasterizeLogoBitmap();
                         const logoWidth = 200;
                         const logoHeight = logoWidth / (this.logoAspectRatio || 1);
                         this.logo = { x: 0, y: 0, width: logoWidth, height: logoHeight, opacity: 1 };
@@ -2682,50 +2749,312 @@
             
             async exportCanvas() {
                 const exportNote = document.getElementById('exportNote');
+                exportNote.textContent = 'Preparing export...';
                 
-                if (this.mediaType === 'video') {
-                    // Always export as video - no confirmation dialog
-                    try {
-                        await this.exportVideoWithMediaRecorder(exportNote);
-                    } catch (err) {
-                        console.error('MediaRecorder export failed, falling back to single frame:', err);
-                        alert('Video export is not supported on this browser/device. Saving a high-quality frame instead.');
-                        // fallback to single frame
-                        exportNote.textContent = 'Exporting current frame in high quality...';
-                        this.currentMedia.pause();
-                        const exportCanvas = this.createHighResExport();
-                        exportCanvas.toBlob((blob) => {
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = 'core-editor-frame.png';
-                            a.click();
-                            URL.revokeObjectURL(url);
-                            exportNote.textContent = 'High quality frame exported!';
-                            setTimeout(() => {
-                                exportNote.textContent = 'Note: On this device, only frame export is available';
-                            }, 3000);
-                        }, 'image/png', 1.0);
+                try {
+                    if (!this.currentMedia) {
+                        throw new Error('No media loaded for export');
                     }
-                } else {
-                    exportNote.textContent = 'Exporting in high quality...';
+                
+                    // For video - use existing video export logic
+                    if (this.mediaType === 'video') {
+                        try {
+                            await this.exportVideoWithMediaRecorder(exportNote);
+                        } catch (err) {
+                            console.error('MediaRecorder export failed, falling back to single frame:', err);
+                            alert('Video export is not supported on this browser/device. Saving a high-quality frame instead.');
+                            await this.exportCurrentFrame(exportNote);
+                        }
+                        return;
+                    }
                     
-                    // Create high-res export canvas
-                    const exportCanvas = this.createHighResExport();
+                    // For images - completely new export logic
+                    await this.exportImage(exportNote);
                     
-                    exportCanvas.toBlob((blob) => {
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'core-editor-image.png';
-                        a.click();
-                        URL.revokeObjectURL(url);
+                } catch (error) {
+                    console.error('Export failed completely:', error);
+                    exportNote.textContent = 'Export failed: ' + error.message;
+                    setTimeout(() => {
+                        exportNote.textContent = '';
+                    }, 5000);
+                }
+            }
+
+            async exportImage(exportNote) {
+                exportNote.textContent = 'Creating high-resolution export...';
+                
+                // Get media dimensions
+                const mediaWidth = this.currentMedia.naturalWidth || this.currentMedia.width || 800;
+                const mediaHeight = this.currentMedia.naturalHeight || this.currentMedia.height || 600;
+                
+                console.log('Export: Media dimensions:', mediaWidth, 'x', mediaHeight);
+                
+                // Create export canvas at full media resolution
+                const canvas = document.createElement('canvas');
+                canvas.width = mediaWidth;
+                canvas.height = mediaHeight;
+                const ctx = canvas.getContext('2d');
+                
+                // Draw media
+                ctx.drawImage(this.currentMedia, 0, 0, mediaWidth, mediaHeight);
+                console.log('Export: Media drawn to canvas');
+                
+                // Test if canvas is safe to export BEFORE adding logo
+                let canExport = false;
+                try {
+                    const testData = canvas.toDataURL('image/png', 0.1);
+                    canExport = (testData && testData !== 'data:,');
+                    console.log('Export: Canvas is safe to export:', canExport);
+                } catch (testErr) {
+                    console.error('Export: Canvas is tainted, cannot export:', testErr);
+                    throw new Error('Cannot export: Image is from external domain. Please upload image from your computer.');
+                }
+                
+                // Draw logo if it exists AND canvas is safe
+                if (this.logo && canExport) {
+                    console.log('Export: Logo detected, preparing to draw...');
+                    
+                    // Ensure logo is rasterized (bitmap version is safer)
+                    if (!this.logoBitmap || !this.logoBitmap.complete) {
+                        console.log('Export: Rasterizing logo...');
+                        exportNote.textContent = 'Preparing logo...';
+                        try {
+                            await this.rasterizeLogoBitmap();
+                        } catch (rasterErr) {
+                            console.warn('Export: Rasterization failed:', rasterErr);
+                        }
+                    }
+                    
+                    // Use bitmap version if available, otherwise original
+                    let logoSrc = this.logoBitmap || this.logoImage;
+                    
+                    if (logoSrc && logoSrc.complete) {
+                        // Calculate logo position and size for export
+                        const rect = this.getMediaDrawRect();
+                        const scale = mediaWidth / rect.drawWidth;
                         
-                        exportNote.textContent = 'High quality image exported!';
-                        setTimeout(() => {
-                            exportNote.textContent = '';
-                        }, 2000);
-                    }, 'image/png', 1.0);
+                        const logoX = (this.logo.x - rect.offsetX) * scale;
+                        const logoY = (this.logo.y - rect.offsetY) * scale;
+                        const logoW = this.logo.width * scale;
+                        const logoH = this.logo.height * scale;
+                        
+                        console.log('Export: Drawing logo at:', {x: logoX, y: logoY, w: logoW, h: logoH});
+                        
+                        // Try drawing logo - if it taints canvas, we'll catch it
+                        try {
+                            ctx.save();
+                            ctx.globalAlpha = this.logo.opacity || 1;
+                            ctx.imageSmoothingEnabled = true;
+                            ctx.imageSmoothingQuality = 'high';
+                            ctx.drawImage(logoSrc, logoX, logoY, logoW, logoH);
+                            ctx.restore();
+                            
+                            // Test again after drawing logo
+                            const testData2 = canvas.toDataURL('image/png', 0.1);
+                            if (testData2 && testData2 !== 'data:,') {
+                                console.log('Export: ✓ Logo drawn successfully!');
+                            } else {
+                                throw new Error('Logo tainted canvas');
+                            }
+                        } catch (logoErr) {
+                            console.error('Export: Logo caused taint, redrawing without logo:', logoErr);
+                            // Redraw without logo
+                            ctx.clearRect(0, 0, mediaWidth, mediaHeight);
+                            ctx.drawImage(this.currentMedia, 0, 0, mediaWidth, mediaHeight);
+                            exportNote.textContent = 'Exporting without logo (CORS issue)...';
+                        }
+                    } else {
+                        console.warn('Export: Logo source not available');
+                    }
+                }
+                
+                // Export using dataURL
+                exportNote.textContent = 'Generating download...';
+                
+                try {
+                    const dataURL = canvas.toDataURL('image/png', 1.0);
+                    
+                    if (!dataURL || dataURL === 'data:,') {
+                        throw new Error('Failed to generate image data');
+                    }
+                    
+                    const a = document.createElement('a');
+                    a.href = dataURL;
+                    a.download = 'core-editor-export.png';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    
+                    console.log('Export: ✓ Download completed successfully! Data URL length:', dataURL.length);
+                    exportNote.textContent = 'Export completed!';
+                    setTimeout(() => exportNote.textContent = '', 2000);
+                    
+                } catch (err) {
+                    console.error('Export: Final export failed:', err);
+                    throw new Error('Failed to export image. The image may be from an external domain.');
+                }
+            }
+
+            async exportCurrentFrame(exportNote) {
+                if (this.mediaType !== 'video') return this.exportImage(exportNote);
+                
+                exportNote.textContent = 'Exporting current video frame...';
+                this.currentMedia.pause();
+                
+                // Treat current video frame like an image
+                await this.exportImage(exportNote);
+            }
+
+            async ensureLogo() {
+                if (this.logoImage && this.logoImage.complete) return;
+                
+                return new Promise((resolve) => {
+                    if (!this.logoImage) {
+                        this.logoImage = new Image();
+                        this.logoImage.onload = () => {
+                            this.logoImageLoaded = true;
+                            resolve();
+                        };
+                        this.logoImage.onerror = () => resolve();
+                        
+                        // Load SVG as data URL to avoid CORS
+                        fetch('corelogo.svg')
+                            .then(resp => resp.text())
+                            .then(svgText => {
+                                const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText);
+                                this.logoImage.src = dataUrl;
+                            })
+                            .catch(() => {
+                                this.logoImage.src = 'corelogo.svg';
+                            });
+                    } else {
+                        resolve();
+                    }
+                });
+            }
+
+            // Fallback export method using toDataURL
+            async fallbackExport(canvas, exportNote) {
+                try {
+                    console.log('Using fallback export method with toDataURL');
+                    exportNote.textContent = 'Using fallback export method...';
+                    
+                    let dataURL;
+                    try {
+                        dataURL = canvas.toDataURL('image/png', 1.0);
+                    } catch (err) {
+                        console.warn('toDataURL failed on provided canvas, regenerating safe canvas without logo:', err?.message || err);
+                    }
+                    
+                    if (!dataURL || dataURL === 'data:,') {
+                        console.log('Fallback: initial toDataURL empty; attempting high-res with logo...');
+                        // Try a high-res sanitized export with logo first
+                        try {
+                            if (this.logo && (!this.logoBitmap || !this.logoBitmap.complete)) {
+                                try { await this.rasterizeLogoBitmap(); } catch (e) { console.warn('Rasterize during fallback failed:', e); }
+                            }
+                            const hi = this.createHighResExport();
+                            console.log('High-res export canvas size:', hi.width, 'x', hi.height);
+                            dataURL = hi.toDataURL('image/png', 1.0);
+                        } catch (hiErr) {
+                            console.warn('High-res fallback with logo failed:', hiErr?.message || hiErr);
+                        }
+                    }
+                    if (!dataURL || dataURL === 'data:,') {
+                        console.log('Fallback: high-res with logo failed; exporting display-res without logo...');
+                        // As a last resort, export display-resolution media-only (no logo) to avoid CORS taint
+                        try {
+                            const safe = document.createElement('canvas');
+                            safe.width = this.canvasDisplayWidth || 800;
+                            safe.height = this.canvasDisplayHeight || 600;
+                            const sctx = safe.getContext('2d');
+                            sctx.imageSmoothingEnabled = true;
+                            sctx.imageSmoothingQuality = 'high';
+                            const media = this.currentMedia;
+                            if (!media) throw new Error('No media available for fallback');
+                            const mediaAspect = (media.videoWidth && media.videoHeight) ? 
+                                (media.videoWidth / media.videoHeight) : 
+                                ((media.naturalWidth || media.width) / (media.naturalHeight || media.height));
+                            const canvasAspect = safe.width / safe.height;
+                            let dw, dh, ox, oy;
+                            if (mediaAspect > canvasAspect) {
+                                dw = safe.width;
+                                dh = safe.width / mediaAspect;
+                                ox = 0;
+                                oy = (safe.height - dh) / 2;
+                            } else {
+                                dh = safe.height;
+                                dw = safe.height * mediaAspect;
+                                ox = (safe.width - dw) / 2;
+                                oy = 0;
+                            }
+                            sctx.drawImage(media, ox, oy, dw, dh);
+                            dataURL = safe.toDataURL('image/png', 1.0);
+                            console.log('Media-only fallback size:', safe.width, 'x', safe.height);
+                            exportNote.textContent = 'Exported without logo overlay due to browser security (CORS).';
+                            setTimeout(() => { exportNote.textContent = ''; }, 4000);
+                        } catch (safeErr) {
+                            console.error('Safe fallback failed:', safeErr);
+                            throw new Error('Safe fallback failed');
+                        }
+                    }
+                    
+                    const a = document.createElement('a');
+                    a.href = dataURL;
+                    a.download = 'core-editor-image.png';
+                    
+                    // Dodaj element do dokumentu tymczasowo
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    
+                    exportNote.textContent = 'Image exported successfully!';
+                    console.log('Export complete (dataURL length):', dataURL?.length || 0);
+                    setTimeout(() => {
+                        exportNote.textContent = '';
+                    }, 2000);
+                    
+                } catch (error) {
+                    console.error('Fallback export also failed:', error);
+                    exportNote.textContent = 'Export failed completely. Please try refreshing the page.';
+                    setTimeout(() => {
+                        exportNote.textContent = '';
+                    }, 5000);
+                }
+            }
+
+            // Fallback export method for video frames
+            fallbackExportFrame(canvas, exportNote) {
+                try {
+                    console.log('Using fallback frame export method with toDataURL');
+                    exportNote.textContent = 'Using fallback export method...';
+                    
+                    const dataURL = canvas.toDataURL('image/png', 1.0);
+                    
+                    if (!dataURL || dataURL === 'data:,') {
+                        throw new Error('Canvas toDataURL returned empty result');
+                    }
+                    
+                    const a = document.createElement('a');
+                    a.href = dataURL;
+                    a.download = 'core-editor-frame.png';
+                    
+                    // Dodaj element do dokumentu tymczasowo
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    
+                    exportNote.textContent = 'High quality frame exported!';
+                    setTimeout(() => {
+                        exportNote.textContent = 'Note: On this device, only frame export is available';
+                    }, 3000);
+                    
+                } catch (error) {
+                    console.error('Fallback frame export also failed:', error);
+                    exportNote.textContent = 'Frame export failed completely. Please try refreshing the page.';
+                    setTimeout(() => {
+                        exportNote.textContent = 'Note: On this device, only frame export is available';
+                    }, 5000);
                 }
             }
 
@@ -2860,12 +3189,25 @@
                 try { video.pause(); } catch (_) {}
 
                 const blob = new Blob(chunks, { type: support.mimeType });
+                
+                if (!blob || blob.size === 0) {
+                    throw new Error('Video export produced empty file');
+                }
+                
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = `core-editor-video.${support.ext}`;
+                
+                // Dodaj element do dokumentu tymczasowo
+                document.body.appendChild(a);
                 a.click();
-                URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                // Zwolnij URL po krótkim opóźnieniu
+                setTimeout(() => {
+                    URL.revokeObjectURL(url);
+                }, 1000);
 
                 exportNote.textContent = `Video exported as .${support.ext}!`;
                 setTimeout(() => { exportNote.textContent = 'Ready'; }, 3000);
@@ -3049,17 +3391,58 @@
                 const mediaWidth = this.currentMedia.videoWidth || this.currentMedia.naturalWidth || this.currentMedia.width;
                 const mediaHeight = this.currentMedia.videoHeight || this.currentMedia.naturalHeight || this.currentMedia.height;
                 
+                console.log('Creating high-res export:', { mediaWidth, mediaHeight });
+                
+                // Test if canvas will be tainted by trying to read a small piece
+                try {
+                    const testCanvas = document.createElement('canvas');
+                    testCanvas.width = 1;
+                    testCanvas.height = 1;
+                    const testCtx = testCanvas.getContext('2d');
+                    testCtx.drawImage(this.currentMedia, 0, 0, 1, 1);
+                    testCanvas.toDataURL(); // This will throw if tainted
+                    console.log('Canvas should not be tainted');
+                } catch (taintError) {
+                    console.warn('Canvas will be tainted, but continuing with export:', taintError.message);
+                }
+                
+                if (!mediaWidth || !mediaHeight || mediaWidth <= 0 || mediaHeight <= 0) {
+                    console.error('Invalid media dimensions for export:', { mediaWidth, mediaHeight });
+                    // Fallback to display canvas size
+                    const fallbackWidth = this.canvasDisplayWidth || 800;
+                    const fallbackHeight = this.canvasDisplayHeight || 600;
+                    console.log('Using fallback dimensions:', { fallbackWidth, fallbackHeight });
+                }
+                
+                const finalWidth = (mediaWidth && mediaWidth > 0) ? mediaWidth : (this.canvasDisplayWidth || 800);
+                const finalHeight = (mediaHeight && mediaHeight > 0) ? mediaHeight : (this.canvasDisplayHeight || 600);
+                
                 // Create export canvas at original resolution
                 const exportCanvas = document.createElement('canvas');
-                exportCanvas.width = mediaWidth;
-                exportCanvas.height = mediaHeight;
+                exportCanvas.width = finalWidth;
+                exportCanvas.height = finalHeight;
                 const exportCtx = exportCanvas.getContext('2d');
                 
+                if (!exportCtx) {
+                    console.error('Failed to get 2D context from export canvas');
+                    throw new Error('Cannot create export canvas context');
+                }
+                
                 // Draw media at full resolution
-                exportCtx.drawImage(this.currentMedia, 0, 0, mediaWidth, mediaHeight);
+                try {
+                    exportCtx.drawImage(this.currentMedia, 0, 0, finalWidth, finalHeight);
+                } catch (error) {
+                    console.error('Failed to draw media to export canvas:', error);
+                    throw new Error('Cannot draw media to export canvas: ' + error.message);
+                }
                 
                 // Draw logo at proportionally scaled size
-                if (this.logo && this.logoImageLoaded && this.logoImage.complete) {
+                if (this.logo && this.logoImageLoaded && this.logoImage && this.logoImage.complete) {
+                    console.log('Export: Logo state check passed - drawing logo...');
+                    console.log('Logo object:', this.logo);
+                    console.log('Logo bitmap:', this.logoBitmap ? 'exists' : 'null');
+                    console.log('Logo image:', this.logoImage ? 'exists' : 'null');
+                    
                     // Ensure we have accurate logo aspect ratio resolved (for SVG)
                     // Note: createHighResExport is sync, but ensureLogoAspectRatio sets cached ratio if already known
                     if (!this.logoAspectRatio || !isFinite(this.logoAspectRatio)) {
@@ -3072,23 +3455,49 @@
                     
                     // Use UNIFORM scale to preserve logo aspect ratio
                     // Choose the same scale for both X and Y based on media scaling
-                    const uniformScale = mediaWidth / rect.drawWidth; // or mediaHeight / rect.drawHeight - both should be the same
-                    
-                    exportCtx.save();
-                    exportCtx.globalAlpha = this.logo.opacity;
-                    exportCtx.imageSmoothingEnabled = true;
-                    exportCtx.imageSmoothingQuality = 'high';
+                    const uniformScale = finalWidth / rect.drawWidth; // or finalHeight / rect.drawHeight - both should be the same
                     
                     // Calculate export logo position and size using uniform scale
                     const exportLogoX = (this.logo.x - rect.offsetX) * uniformScale;
                     const exportLogoY = (this.logo.y - rect.offsetY) * uniformScale;
                     const exportLogoWidth = this.logo.width * uniformScale;
                     const exportLogoHeight = this.logo.height * uniformScale;
-                    
-                    // this.logo already has correct aspect ratio, so use scaled dimensions directly
+
+                    // ZAWSZE używaj logoBitmap jeśli istnieje, inaczej logoImage
                     const srcImg = this.logoBitmap || this.logoImage;
-                    exportCtx.drawImage(srcImg, exportLogoX, exportLogoY, exportLogoWidth, exportLogoHeight);
-                    exportCtx.restore();
+                    const validDims = exportLogoWidth > 0 && exportLogoHeight > 0 && isFinite(exportLogoWidth) && isFinite(exportLogoHeight);
+
+                    console.log('Export logo params:', {
+                        x: exportLogoX,
+                        y: exportLogoY,
+                        width: exportLogoWidth,
+                        height: exportLogoHeight,
+                        srcImg: srcImg ? 'exists' : 'null',
+                        validDims: validDims
+                    });
+
+                    if (srcImg && validDims) {
+                        try {
+                            exportCtx.save();
+                            exportCtx.globalAlpha = this.logo.opacity;
+                            exportCtx.imageSmoothingEnabled = true;
+                            exportCtx.imageSmoothingQuality = 'high';
+                            exportCtx.drawImage(srcImg, exportLogoX, exportLogoY, exportLogoWidth, exportLogoHeight);
+                            exportCtx.restore();
+                            console.log('✓ Logo drawn successfully on export canvas!');
+                        } catch (logoErr) {
+                            console.error('✗ Failed to draw logo on export:', logoErr);
+                        }
+                    } else {
+                        console.warn('✗ Skipping logo draw - srcImg:', !!srcImg, 'validDims:', validDims);
+                    }
+                } else {
+                    console.warn('✗ Logo check failed at start of draw:', {
+                        hasLogo: !!this.logo,
+                        logoImageLoaded: this.logoImageLoaded,
+                        hasLogoImage: !!this.logoImage,
+                        logoImageComplete: this.logoImage ? this.logoImage.complete : false
+                    });
                 }
                 
                 return exportCanvas;
