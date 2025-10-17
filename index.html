@@ -357,74 +357,10 @@
             }
         }
         
-        /* Marquee Banner Above Navbar */
-        .marquee-banner {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 32px;
-            background: rgba(0, 25, 40, 0.3);
-            backdrop-filter: blur(15px);
-            border: none;
-            border-bottom: 1px solid rgba(0, 153, 255, 0.15);
-            z-index: 101;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1),
-                       0 2px 6px rgba(0, 0, 0, 0.05);
-            text-decoration: none;
-            cursor: pointer;
-            transition: background 0.3s ease, border-color 0.3s ease;
-        }
-        
-        .marquee-banner:hover {
-            background: rgba(0, 25, 40, 0.5);
-            border-bottom: 1px solid rgba(0, 153, 255, 0.3);
-        }
-        
-        .marquee-content {
-            display: flex;
-            white-space: nowrap;
-            animation: marqueeScroll 25s linear infinite;
-        }
-        
-        .marquee-text {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            font-size: 0.7rem;
-            font-weight: 200;
-            letter-spacing: 0.2em;
-            color: var(--core-text-blue);
-            padding: 0 3rem;
-            text-transform: uppercase;
-            text-shadow: 0 0 10px var(--core-glow-blue);
-        }
-        
-        @keyframes marqueeScroll {
-            0% {
-                transform: translateX(0);
-            }
-            100% {
-                transform: translateX(-50%);
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .marquee-banner {
-                height: 28px;
-            }
-            
-            .marquee-text {
-                font-size: 0.6rem;
-                padding: 0 2rem;
-            }
-        }
-        
         /* Sci-Fi Navigation Bar */
         .sci-fi-nav {
             position: fixed;
-            top: 32px; /* Below marquee banner */
+            top: 0px;
             left: 50%;
             transform: translateX(-50%) translateY(-100%); /* Start hidden above viewport */
             z-index: 100;
@@ -448,7 +384,6 @@
                 max-width: none;
                 height: 35px; /* Smaller height for mobile */
                 font-size: 0.85rem;
-                top: 28px; /* Below mobile marquee banner */
             }
             
             .nav-panel {
@@ -4486,7 +4421,6 @@
             cursor: none; /* Hide default cursor */
             margin: 0;
             padding: 0;
-            padding-top: 0; /* No padding needed - logo section handles its own spacing */
             position: relative;
             scroll-behavior: smooth;
             overflow-x: hidden;
@@ -4533,9 +4467,6 @@
         
         .logo-container {
             height: 100vh;
-            min-height: 100vh;
-            padding-top: 38px; /* +2px niżej dla idealnego wycentrowania */
-            padding-bottom: 36px; /* Równomierne wyrównanie */
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -4588,8 +4519,6 @@
             .logo-container {
                 justify-content: center;
                 align-items: center;
-                padding-top: 34px; /* +2px niżej dla idealnego wycentrowania */
-                padding-bottom: 32px;
             }
             
             .logo-container::before {
@@ -4630,8 +4559,8 @@
             .core-logo:hover {
                 filter: drop-shadow(0 0 25px rgba(0, 230, 255, 0.9)) 
                        drop-shadow(0 0 40px rgba(0, 153, 255, 0.7));
-                -webkit-transform: translate3d(0, 0, 0) scale(1.05);
-                transform: translate3d(0, 0, 0) scale(1.05);
+                -webkit-transform: translate3d(0, 0, 0);
+                transform: translate3d(0, 0, 0);
             }
         }
         
@@ -4682,12 +4611,12 @@
         }
 
         .core-logo:hover {
-            /* Intensify glow and scale on hover */
+            /* Intensify glow on hover - bez scale żeby nie kolidować z przyciskiem pod logo */
             filter: drop-shadow(0 0 30px rgba(0, 230, 255, 1)) 
                    drop-shadow(0 0 50px rgba(0, 153, 255, 0.8))
                    drop-shadow(0 0 80px rgba(0, 178, 255, 0.6));
-            transform: translate3d(0, 0, 0) scale(1.08); /* Subtelne powiększenie przy hover + GPU */
-            -webkit-transform: translate3d(0, 0, 0) scale(1.08); /* Safari specific */
+            transform: translate3d(0, 0, 0); /* Bez scale - button pod logo */
+            -webkit-transform: translate3d(0, 0, 0); /* Safari specific */
         }
 
         /* Actions below the logo */
@@ -4767,10 +4696,60 @@
             }
         }
         
+        /* Dashboard Button - Under Logo */
+        .dashboard-button {
+            position: absolute;
+            top: calc(50% + 60px); /* Bardzo blisko pod logo */
+            left: 50%;
+            transform: translateX(-50%);
+            text-decoration: none;
+            color: var(--core-text-blue);
+            background: rgba(0, 25, 40, 0.3);
+            border: none; /* Usunięte obramowanie */
+            padding: 8px 24px;
+            border-radius: 0;
+            font-size: 0.7rem;
+            font-weight: 200; /* Cieńsza czcionka jak Buy Now */
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1),
+                       0 2px 6px rgba(0, 0, 0, 0.05);
+            text-shadow: 0 0 10px var(--core-glow-blue);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            pointer-events: auto;
+            z-index: 10;
+        }
+        
+        .dashboard-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px; /* Cienka linia jak Buy Now */
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .dashboard-button:hover {
+            background: rgba(0, 25, 40, 0.5);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15),
+                       0 4px 10px rgba(0, 0, 0, 0.08);
+            text-shadow: 0 0 20px var(--core-cyan);
+            transform: translate(-50%, -2px) scale(1.05);
+            color: var(--core-cyan);
+        }
+        
+        .dashboard-button:hover::before {
+            left: 100%;
+        }
+        
         /* Header Actions Section - NEW STYLES */
         .header-actions {
             position: absolute;
-            bottom: 30px; /* Przesunięte niżej z 50px */
+            bottom: 20px; /* Niżej - blisko dolnej krawędzi */
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -5008,8 +4987,23 @@
                 -webkit-transform: translateZ(0) !important;
             }
             
+            .dashboard-button {
+                top: calc(50% + clamp(50px, 8vh, 70px)); /* Bardzo blisko logo na mobile */
+                font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+                padding: clamp(8px, 2vw, 12px) clamp(20px, 5vw, 28px);
+                letter-spacing: 0.15em;
+            }
+            
+            .dashboard-button:hover {
+                transform: translate(-50%, 0) scale(1); /* Bez efektu hover na mobile */
+            }
+            
+            .dashboard-button:active {
+                transform: translate(-50%, 0) scale(0.95); /* Lekkie wciśnięcie */
+            }
+            
             .header-actions { 
-                bottom: clamp(20px, 4vh, 40px); /* Jeszcze niżej - więcej przestrzeni na logo */
+                bottom: clamp(20px, 3vh, 40px); /* Niżej - bliżej dolnej krawędzi */
                 gap: clamp(16px, 2.5vh, 20px); /* Responsywny gap */
                 margin-top: 0; /* Reset - używamy bottom */
             }
@@ -5058,7 +5052,7 @@
             }
             
             .header-actions {
-                bottom: clamp(30px, 5vh, 50px); /* Jeszcze niżej - więcej przestrzeni */
+                bottom: clamp(30px, 4vh, 50px); /* Niżej - blisko dolnej krawędzi małych telefonów */
             }
             
             .header-buy-now {
@@ -5085,7 +5079,7 @@
             }
             
             .header-actions {
-                bottom: clamp(40px, 6vh, 70px); /* Jeszcze niżej - więcej przestrzeni */
+                bottom: clamp(40px, 5vh, 60px); /* Niżej - blisko dolnej krawędzi średnich/dużych telefonów */
             }
             
             .header-buy-now {
@@ -5414,9 +5408,9 @@
 
 
         @media (max-width: 768px) {
-            /* No extra padding needed */
+            /* Reduce padding since mobile navbar is smaller */
             body {
-                padding-top: 0;
+                padding-top: 45px;
             }
         }
     </style>
@@ -5424,18 +5418,6 @@
 <body>
     <!-- Main Content -->
     <div id="main-content" class="main-content">
-    
-    <!-- Marquee Banner -->
-    <a href="dashboard/index.html" class="marquee-banner">
-        <div class="marquee-content">
-            <span class="marquee-text">TRY OUR NEW CREATIVE DASHBOARD</span>
-            <span class="marquee-text">TRY OUR NEW CREATIVE DASHBOARD</span>
-            <span class="marquee-text">TRY OUR NEW CREATIVE DASHBOARD</span>
-            <span class="marquee-text">TRY OUR NEW CREATIVE DASHBOARD</span>
-            <span class="marquee-text">TRY OUR NEW CREATIVE DASHBOARD</span>
-            <span class="marquee-text">TRY OUR NEW CREATIVE DASHBOARD</span>
-        </div>
-    </a>
     
     <!-- Sci-Fi Navigation Bar -->
     <nav class="sci-fi-nav" id="mainNav">
@@ -5474,6 +5456,11 @@
     
     <div class="logo-container" id="top-section">
         <img src="corelogo-2.svg?v=3" alt="CORE" class="core-logo" loading="eager" fetchpriority="high">
+        
+        <!-- Dashboard Button -->
+        <a href="dashboard/index.html" class="dashboard-button">
+            <span>CREATIVE DASHBOARD</span>
+        </a>
         
         <!-- Header Action Section -->
         <div class="header-actions">
