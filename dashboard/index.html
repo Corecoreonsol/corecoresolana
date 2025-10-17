@@ -1419,6 +1419,10 @@
             }
         }
     </style>
+    
+    <!-- FFmpeg.wasm for video export -->
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.7/dist/umd/ffmpeg.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
 </head>
 <body>
     <!-- Mobile Notice -->
@@ -1791,6 +1795,10 @@
                 this.logoImage = null;
                 this.logoImageLoaded = false;
                 this.selectedCoreStyle = null;
+                
+                // FFmpeg for video export
+                this.ffmpeg = null;
+                this.ffmpegLoaded = false;
                 this.isDragging = false;
                 this.dragOffset = { x: 0, y: 0 };
                 // Normalized Y anchor within the logo image (0..1),
@@ -2495,29 +2503,36 @@
                 });
             }
             
-            exportCanvas() {
+            async exportCanvas() {
                 const exportNote = document.getElementById('exportNote');
                 
                 if (this.mediaType === 'video') {
-                    exportNote.textContent = 'Video export not yet supported. Exporting current frame in high quality...';
-                    this.currentMedia.pause();
+                    // Ask user if they want MP4 export
+                    const exportAsVideo = confirm('Do you want to export as MP4 video? (may take time)\n\nClick OK for MP4, Cancel for single frame PNG');
                     
-                    // Create high-res export canvas
-                    const exportCanvas = this.createHighResExport();
-                    
-                    exportCanvas.toBlob((blob) => {
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'core-editor-frame.png';
-                        a.click();
-                        URL.revokeObjectURL(url);
+                    if (exportAsVideo) {
+                        await this.exportVideoAsMP4(exportNote);
+                    } else {
+                        // Export single frame
+                        exportNote.textContent = 'Exporting current frame in high quality...';
+                        this.currentMedia.pause();
                         
-                        exportNote.textContent = 'High quality frame exported!';
-                        setTimeout(() => {
-                            exportNote.textContent = 'Note: Videos export as current frame (PNG)';
-                        }, 3000);
-                    }, 'image/png', 1.0);
+                        const exportCanvas = this.createHighResExport();
+                        
+                        exportCanvas.toBlob((blob) => {
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = 'core-editor-frame.png';
+                            a.click();
+                            URL.revokeObjectURL(url);
+                            
+                            exportNote.textContent = 'High quality frame exported!';
+                            setTimeout(() => {
+                                exportNote.textContent = 'Note: Videos export as current frame (PNG)';
+                            }, 3000);
+                        }, 'image/png', 1.0);
+                    }
                 } else {
                     exportNote.textContent = 'Exporting in high quality...';
                     
@@ -2537,6 +2552,138 @@
                             exportNote.textContent = '';
                         }, 2000);
                     }, 'image/png', 1.0);
+                }
+            }
+            
+            async loadFFmpeg() {
+                if (this.ffmpegLoaded) return true;
+                
+                try {
+                    const { FFmpeg } = FFmpegWASM;
+                    this.ffmpeg = new FFmpeg();
+                    
+                    await this.ffmpeg.load({
+                        coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js'
+                    });
+                    
+                    this.ffmpegLoaded = true;
+                    return true;
+                } catch (error) {
+                    console.error('Failed to load FFmpeg:', error);
+                    return false;
+                }
+            }
+            
+            async exportVideoAsMP4(exportNote) {
+                try {
+                    exportNote.textContent = 'Loading FFmpeg library...';
+                    
+                    // Load FFmpeg
+                    const loaded = await this.loadFFmpeg();
+                    if (!loaded) {
+                        alert('Failed to load video export library. Exporting as single frame instead.');
+                        return;
+                    }
+                    
+                    exportNote.textContent = 'Processing video frames... This may take a while.';
+                    
+                    // Get video properties
+                    const video = this.currentMedia;
+                    const fps = 30; // Target FPS
+                    const duration = video.duration;
+                    const frameCount = Math.floor(duration * fps);
+                    
+                    const mediaWidth = video.videoWidth;
+                    const mediaHeight = video.videoHeight;
+                    
+                    // Create canvas for frame capture
+                    const frameCanvas = document.createElement('canvas');
+                    frameCanvas.width = mediaWidth;
+                    frameCanvas.height = mediaHeight;
+                    const frameCtx = frameCanvas.getContext('2d');
+                    
+                    // Capture all frames
+                    const frames = [];
+                    video.currentTime = 0;
+                    
+                    for (let i = 0; i < frameCount; i++) {
+                        const time = (i / fps);
+                        video.currentTime = time;
+                        
+                        // Wait for video to seek
+                        await new Promise(resolve => {
+                            video.onseeked = resolve;
+                        });
+                        
+                        // Draw frame with logo
+                        frameCtx.drawImage(video, 0, 0, mediaWidth, mediaHeight);
+                        
+                        // Draw logo
+                        if (this.logo && this.logoImageLoaded && this.logoImage.complete) {
+                            const scaleX = mediaWidth / this.canvasDisplayWidth;
+                            const scaleY = mediaHeight / this.canvasDisplayHeight;
+                            
+                            frameCtx.save();
+                            frameCtx.globalAlpha = this.logo.opacity;
+                            frameCtx.imageSmoothingEnabled = true;
+                            frameCtx.imageSmoothingQuality = 'high';
+                            
+                            const logoX = this.logo.x * scaleX;
+                            const logoY = this.logo.y * scaleY;
+                            const logoWidth = this.logo.width * scaleX;
+                            const logoHeight = this.logo.height * scaleY;
+                            
+                            frameCtx.drawImage(this.logoImage, logoX, logoY, logoWidth, logoHeight);
+                            frameCtx.restore();
+                        }
+                        
+                        // Convert to blob
+                        const blob = await new Promise(resolve => frameCanvas.toBlob(resolve, 'image/png'));
+                        const buffer = await blob.arrayBuffer();
+                        frames.push(new Uint8Array(buffer));
+                        
+                        exportNote.textContent = `Processing frame ${i + 1}/${frameCount}...`;
+                    }
+                    
+                    exportNote.textContent = 'Encoding video to MP4...';
+                    
+                    // Write frames to FFmpeg
+                    for (let i = 0; i < frames.length; i++) {
+                        await this.ffmpeg.writeFile(`frame${i.toString().padStart(5, '0')}.png`, frames[i]);
+                    }
+                    
+                    // Run FFmpeg to create MP4
+                    await this.ffmpeg.exec([
+                        '-framerate', fps.toString(),
+                        '-i', 'frame%05d.png',
+                        '-c:v', 'libx264',
+                        '-pix_fmt', 'yuv420p',
+                        'output.mp4'
+                    ]);
+                    
+                    // Read output file
+                    const data = await this.ffmpeg.readFile('output.mp4');
+                    
+                    // Download
+                    const blob = new Blob([data.buffer], { type: 'video/mp4' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'core-editor-video.mp4';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    
+                    exportNote.textContent = 'Video exported successfully!';
+                    setTimeout(() => {
+                        exportNote.textContent = '';
+                    }, 3000);
+                    
+                } catch (error) {
+                    console.error('Video export error:', error);
+                    exportNote.textContent = 'Video export failed. Try exporting as single frame.';
+                    setTimeout(() => {
+                        exportNote.textContent = '';
+                    }, 3000);
                 }
             }
             
