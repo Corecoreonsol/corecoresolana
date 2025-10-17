@@ -98,7 +98,7 @@
             /* Ensure smooth scrolling on mobile */
             body {
                 -webkit-overflow-scrolling: touch;
-                overscroll-behavior: contain;
+                overscroll-behavior: auto;
             }
         }
 
@@ -1167,12 +1167,12 @@
                 min-height: 100vh;
                 grid-template-rows: auto auto;
                 overflow: visible;
-                padding-bottom: 50vh;
+                padding-bottom: 60vh;
             }
             
             .pfp-panel {
                 padding: 0.6rem;
-                min-height: 450px;
+                min-height: 380px;
                 height: auto;
                 overflow: visible;
             }
@@ -1250,6 +1250,8 @@
             .generate-btn {
                 font-size: 0.6rem;
                 padding: 8px 16px;
+                max-width: 250px;
+                margin-top: 0.5rem;
             }
         }
 
@@ -1286,11 +1288,11 @@
                 height: auto;
                 min-height: 100vh;
                 overflow: visible;
-                padding-bottom: 50vh;
+                padding-bottom: 60vh;
             }
             
             .pfp-panel {
-                min-height: 450px;
+                min-height: 380px;
                 height: auto;
                 overflow: visible;
             }
