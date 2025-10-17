@@ -1929,16 +1929,12 @@
                 
                 // Sliders - dodaj sprawdzenie czy elementy istnieją
                 if (this.logoSizeSlider && this.logoSizeValue) {
-                    this.logoSizeSlider.addEventListener('input', (e) => {
+                    this.logoSizeSlider.addEventListener('input', async (e) => {
                         this.logoSizeValue.textContent = e.target.value;
-                        if (this.logo && this.logoImage) {
+                        if (this.logo) {
+                            await this.ensureLogoAspectRatio();
                             const newWidth = parseInt(e.target.value);
-                            // Calculate height to preserve aspect ratio
-                            const logoNaturalWidth = this.logoImage.naturalWidth || this.logoImage.width;
-                            const logoNaturalHeight = this.logoImage.naturalHeight || this.logoImage.height;
-                            const logoAspectRatio = logoNaturalWidth / logoNaturalHeight;
-                            const newHeight = newWidth / logoAspectRatio;
-                            
+                            const newHeight = newWidth / (this.logoAspectRatio || 1);
                             this.logo.width = newWidth;
                             this.logo.height = newHeight;
                             this.render();
@@ -2280,9 +2276,9 @@
                 this.ctx.clearRect(0, 0, this.canvasDisplayWidth, this.canvasDisplayHeight);
                 
                 // Draw media with contain fit - show full image without cropping
-                const mediaAspect = this.currentMedia.videoWidth ? 
-                    this.currentMedia.videoWidth / this.currentMedia.videoHeight : 
-                    this.currentMedia.width / this.currentMedia.height;
+                const mediaAspect = (this.currentMedia.videoWidth && this.currentMedia.videoHeight) ? 
+                    (this.currentMedia.videoWidth / this.currentMedia.videoHeight) : 
+                    ((this.currentMedia.naturalWidth || this.currentMedia.width) / (this.currentMedia.naturalHeight || this.currentMedia.height));
                 const canvasAspect = this.canvasDisplayWidth / this.canvasDisplayHeight;
                 
                 let drawWidth, drawHeight, offsetX, offsetY;
@@ -3037,9 +3033,9 @@
                 if (!this.currentMedia) {
                     return { drawWidth: this.canvasDisplayWidth, drawHeight: this.canvasDisplayHeight, offsetX: 0, offsetY: 0 };
                 }
-                const mediaAspect = this.currentMedia.videoWidth ?
-                    this.currentMedia.videoWidth / this.currentMedia.videoHeight :
-                    this.currentMedia.width / this.currentMedia.height;
+                const mediaAspect = (this.currentMedia.videoWidth && this.currentMedia.videoHeight) ?
+                    (this.currentMedia.videoWidth / this.currentMedia.videoHeight) :
+                    ((this.currentMedia.naturalWidth || this.currentMedia.width) / (this.currentMedia.naturalHeight || this.currentMedia.height));
                 const canvasAspect = this.canvasDisplayWidth / this.canvasDisplayHeight;
                 let drawWidth, drawHeight, offsetX, offsetY;
                 if (mediaAspect > canvasAspect) {
