@@ -2097,7 +2097,12 @@
             
             handleMediaUpload(e) {
                 const file = e.target.files[0];
-                if (!file) return;
+                if (!file) {
+                    console.log('No file selected');
+                    return;
+                }
+                
+                console.log('File selected:', file.name, file.type, file.size);
                 
                 const fileType = file.type.split('/')[0];
                 
@@ -2105,22 +2110,58 @@
                     this.mediaType = 'image';
                     const img = new Image();
                     img.onload = () => {
+                        console.log('Image loaded successfully:', img.width, 'x', img.height);
                         this.currentMedia = img;
                         this.showCanvas();
                     };
+                    img.onerror = (err) => {
+                        console.error('Image load error:', err);
+                        alert('Failed to load image. Please try a different file.');
+                    };
                     img.src = URL.createObjectURL(file);
                 } else if (fileType === 'video') {
+                    console.log('Loading video...');
                     this.mediaType = 'video';
                     const video = document.createElement('video');
-                    video.src = URL.createObjectURL(file);
+                    
+                    // Critical mobile video settings
+                    video.setAttribute('playsinline', ''); // Required for iOS
+                    video.setAttribute('webkit-playsinline', ''); // Required for older iOS
                     video.muted = true;
                     video.loop = true;
-                    video.onloadeddata = () => {
-                        this.currentMedia = video;
-                        video.play();
-                        this.showCanvas();
-                        this.startVideoRender();
+                    video.preload = 'auto';
+                    
+                    video.onerror = (err) => {
+                        console.error('Video load error:', err, video.error);
+                        alert(`Failed to load video: ${video.error ? video.error.message : 'Unknown error'}. Try a different format (MP4 recommended).`);
                     };
+                    
+                    video.onloadedmetadata = () => {
+                        console.log('Video metadata loaded:', video.videoWidth, 'x', video.videoHeight, video.duration + 's');
+                    };
+                    
+                    video.onloadeddata = () => {
+                        console.log('Video data loaded, attempting to play...');
+                        this.currentMedia = video;
+                        
+                        // Try to play video
+                        video.play().then(() => {
+                            console.log('Video playing successfully');
+                            this.showCanvas();
+                            this.startVideoRender();
+                        }).catch((err) => {
+                            console.error('Video play error:', err);
+                            // Show canvas anyway, user can see first frame
+                            this.showCanvas();
+                            this.startVideoRender();
+                        });
+                    };
+                    
+                    video.src = URL.createObjectURL(file);
+                    video.load(); // Explicitly load on mobile
+                } else {
+                    console.log('Unsupported file type:', file.type);
+                    alert('Unsupported file type. Please upload an image or video.');
                 }
             }
             
@@ -2631,8 +2672,13 @@
 
                 // Precompute mapping from UI canvas coordinates to media pixels
                 const rect = this.getMediaDrawRect();
-                const scaleX = mediaWidth / rect.drawWidth;
-                const scaleY = mediaHeight / rect.drawHeight;
+                // Use UNIFORM scale to preserve logo aspect ratio
+                const uniformScale = mediaWidth / rect.drawWidth;
+                
+                // Get logo's natural aspect ratio once
+                const logoNaturalWidth = this.logoImage ? (this.logoImage.naturalWidth || this.logoImage.width) : 1;
+                const logoNaturalHeight = this.logoImage ? (this.logoImage.naturalHeight || this.logoImage.height) : 1;
+                const logoAspectRatio = logoNaturalWidth / logoNaturalHeight;
 
                 const draw = (now) => {
                     if (!running) return;
@@ -2646,10 +2692,12 @@
                             octx.globalAlpha = this.logo.opacity;
                             octx.imageSmoothingEnabled = true;
                             octx.imageSmoothingQuality = 'high';
-                            const lx = (this.logo.x - rect.offsetX) * scaleX;
-                            const ly = (this.logo.y - rect.offsetY) * scaleY;
-                            const lw = this.logo.width * scaleX;
-                            const lh = this.logo.height * scaleY;
+                            
+                            const lx = (this.logo.x - rect.offsetX) * uniformScale;
+                            const ly = (this.logo.y - rect.offsetY) * uniformScale;
+                            const lw = this.logo.width * uniformScale;
+                            const lh = lw / logoAspectRatio; // Preserve aspect ratio
+                            
                             octx.drawImage(this.logoImage, lx, ly, lw, lh);
                             octx.restore();
                         }
@@ -2882,20 +2930,32 @@
                 if (this.logo && this.logoImageLoaded && this.logoImage.complete) {
                     // Map from what the user sees (contain-fit with offsets) to full-resolution media space
                     const rect = this.getMediaDrawRect();
-                    const scaleX = mediaWidth / rect.drawWidth;
-                    const scaleY = mediaHeight / rect.drawHeight;
+                    
+                    // Use UNIFORM scale to preserve logo aspect ratio
+                    // Choose the same scale for both X and Y based on media scaling
+                    const uniformScale = mediaWidth / rect.drawWidth; // or mediaHeight / rect.drawHeight - both should be the same
                     
                     exportCtx.save();
                     exportCtx.globalAlpha = this.logo.opacity;
                     exportCtx.imageSmoothingEnabled = true;
                     exportCtx.imageSmoothingQuality = 'high';
                     
-                    const exportLogoX = (this.logo.x - rect.offsetX) * scaleX;
-                    const exportLogoY = (this.logo.y - rect.offsetY) * scaleY;
-                    const exportLogoWidth = this.logo.width * scaleX;
-                    const exportLogoHeight = this.logo.height * scaleY;
+                    // Calculate export logo position and size using uniform scale
+                    const exportLogoX = (this.logo.x - rect.offsetX) * uniformScale;
+                    const exportLogoY = (this.logo.y - rect.offsetY) * uniformScale;
+                    const exportLogoWidth = this.logo.width * uniformScale;
+                    const exportLogoHeight = this.logo.height * uniformScale;
                     
-                    exportCtx.drawImage(this.logoImage, exportLogoX, exportLogoY, exportLogoWidth, exportLogoHeight);
+                    // Get logo's natural aspect ratio
+                    const logoNaturalWidth = this.logoImage.naturalWidth || this.logoImage.width;
+                    const logoNaturalHeight = this.logoImage.naturalHeight || this.logoImage.height;
+                    const logoAspectRatio = logoNaturalWidth / logoNaturalHeight;
+                    
+                    // Preserve logo aspect ratio - adjust height based on width
+                    const finalLogoWidth = exportLogoWidth;
+                    const finalLogoHeight = exportLogoWidth / logoAspectRatio;
+                    
+                    exportCtx.drawImage(this.logoImage, exportLogoX, exportLogoY, finalLogoWidth, finalLogoHeight);
                     exportCtx.restore();
                 }
                 
