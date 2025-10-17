@@ -374,6 +374,14 @@
             align-items: center;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1),
                        0 2px 6px rgba(0, 0, 0, 0.05);
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+        
+        .marquee-banner:hover {
+            background: rgba(0, 25, 40, 0.5);
+            border-bottom: 1px solid rgba(0, 153, 255, 0.3);
         }
         
         .marquee-content {
@@ -5418,7 +5426,7 @@
     <div id="main-content" class="main-content">
     
     <!-- Marquee Banner -->
-    <div class="marquee-banner">
+    <a href="dashboard/index.html" class="marquee-banner">
         <div class="marquee-content">
             <span class="marquee-text">TRY OUR NEW CREATIVE DASHBOARD</span>
             <span class="marquee-text">TRY OUR NEW CREATIVE DASHBOARD</span>
@@ -5427,7 +5435,7 @@
             <span class="marquee-text">TRY OUR NEW CREATIVE DASHBOARD</span>
             <span class="marquee-text">TRY OUR NEW CREATIVE DASHBOARD</span>
         </div>
-    </div>
+    </a>
     
     <!-- Sci-Fi Navigation Bar -->
     <nav class="sci-fi-nav" id="mainNav">
