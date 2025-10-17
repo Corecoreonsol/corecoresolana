@@ -98,7 +98,7 @@
             /* Ensure smooth scrolling on mobile */
             body {
                 -webkit-overflow-scrolling: touch;
-                overscroll-behavior: auto;
+                overscroll-behavior: contain;
             }
         }
 
@@ -263,6 +263,7 @@
             height: 100%;
             position: relative;
             overflow: visible;
+            touch-action: pan-y;
         }
 
         .pfp-panel::before {
@@ -389,6 +390,9 @@
 
         .generate-btn {
             width: 100%;
+            max-width: 280px;
+            margin-left: auto;
+            margin-right: auto;
             padding: 10px 20px;
             margin-top: 0.8rem;
             background: rgba(0, 25, 40, 0.3);
@@ -449,6 +453,7 @@
             height: 100%;
             position: relative;
             overflow: hidden;
+            touch-action: pan-y;
         }
 
         .editor-panel::before {
@@ -1003,10 +1008,11 @@
                 min-height: calc(100vh - 80px);
                 overflow: visible;
                 padding-bottom: 40vh;
+                touch-action: pan-y;
             }
 
             .pfp-panel {
-                min-height: 450px;
+                min-height: 380px;
                 height: auto;
                 overflow: visible;
             }
@@ -1167,7 +1173,7 @@
                 min-height: 100vh;
                 grid-template-rows: auto auto;
                 overflow: visible;
-                padding-bottom: 60vh;
+                padding-bottom: 50vh;
             }
             
             .pfp-panel {
@@ -1250,8 +1256,6 @@
             .generate-btn {
                 font-size: 0.6rem;
                 padding: 8px 16px;
-                max-width: 250px;
-                margin-top: 0.5rem;
             }
         }
 
@@ -1288,7 +1292,8 @@
                 height: auto;
                 min-height: 100vh;
                 overflow: visible;
-                padding-bottom: 60vh;
+                padding-bottom: 50vh;
+                touch-action: pan-y;
             }
             
             .pfp-panel {
