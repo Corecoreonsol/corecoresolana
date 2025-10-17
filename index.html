@@ -357,10 +357,66 @@
             }
         }
         
+        /* Marquee Banner Above Navbar */
+        .marquee-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 32px;
+            background: rgba(0, 25, 40, 0.3);
+            backdrop-filter: blur(15px);
+            border: none;
+            border-bottom: 1px solid rgba(0, 153, 255, 0.15);
+            z-index: 101;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1),
+                       0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .marquee-content {
+            display: flex;
+            white-space: nowrap;
+            animation: marqueeScroll 25s linear infinite;
+        }
+        
+        .marquee-text {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 0.7rem;
+            font-weight: 200;
+            letter-spacing: 0.2em;
+            color: var(--core-text-blue);
+            padding: 0 3rem;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px var(--core-glow-blue);
+        }
+        
+        @keyframes marqueeScroll {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .marquee-banner {
+                height: 28px;
+            }
+            
+            .marquee-text {
+                font-size: 0.6rem;
+                padding: 0 2rem;
+            }
+        }
+        
         /* Sci-Fi Navigation Bar */
         .sci-fi-nav {
             position: fixed;
-            top: 0px;
+            top: 32px; /* Below marquee banner */
             left: 50%;
             transform: translateX(-50%) translateY(-100%); /* Start hidden above viewport */
             z-index: 100;
@@ -384,6 +440,7 @@
                 max-width: none;
                 height: 35px; /* Smaller height for mobile */
                 font-size: 0.85rem;
+                top: 28px; /* Below mobile marquee banner */
             }
             
             .nav-panel {
@@ -4421,6 +4478,7 @@
             cursor: none; /* Hide default cursor */
             margin: 0;
             padding: 0;
+            padding-top: 0; /* No padding needed - logo section handles its own spacing */
             position: relative;
             scroll-behavior: smooth;
             overflow-x: hidden;
@@ -4467,6 +4525,9 @@
         
         .logo-container {
             height: 100vh;
+            min-height: 100vh;
+            padding-top: 38px; /* +2px niżej dla idealnego wycentrowania */
+            padding-bottom: 36px; /* Równomierne wyrównanie */
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -4519,6 +4580,8 @@
             .logo-container {
                 justify-content: center;
                 align-items: center;
+                padding-top: 34px; /* +2px niżej dla idealnego wycentrowania */
+                padding-bottom: 32px;
             }
             
             .logo-container::before {
@@ -4699,7 +4762,7 @@
         /* Header Actions Section - NEW STYLES */
         .header-actions {
             position: absolute;
-            bottom: 50px; /* Zmniejszone z 80px - niżej względem logo */
+            bottom: 30px; /* Przesunięte niżej z 50px */
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -4938,7 +5001,7 @@
             }
             
             .header-actions { 
-                bottom: clamp(40px, 6vh, 70px); /* Zmniejszone - niżej względem logo */
+                bottom: clamp(20px, 4vh, 40px); /* Jeszcze niżej - więcej przestrzeni na logo */
                 gap: clamp(16px, 2.5vh, 20px); /* Responsywny gap */
                 margin-top: 0; /* Reset - używamy bottom */
             }
@@ -4987,7 +5050,7 @@
             }
             
             .header-actions {
-                bottom: clamp(60px, 8vh, 90px); /* Zmniejszone - niżej dla małych telefonów */
+                bottom: clamp(30px, 5vh, 50px); /* Jeszcze niżej - więcej przestrzeni */
             }
             
             .header-buy-now {
@@ -5014,7 +5077,7 @@
             }
             
             .header-actions {
-                bottom: clamp(70px, 9vh, 100px); /* Zmniejszone - niżej dla średnich i dużych telefonów */
+                bottom: clamp(40px, 6vh, 70px); /* Jeszcze niżej - więcej przestrzeni */
             }
             
             .header-buy-now {
@@ -5343,9 +5406,9 @@
 
 
         @media (max-width: 768px) {
-            /* Reduce padding since mobile navbar is smaller */
+            /* No extra padding needed */
             body {
-                padding-top: 45px;
+                padding-top: 0;
             }
         }
     </style>
@@ -5353,6 +5416,18 @@
 <body>
     <!-- Main Content -->
     <div id="main-content" class="main-content">
+    
+    <!-- Marquee Banner -->
+    <div class="marquee-banner">
+        <div class="marquee-content">
+            <span class="marquee-text">TRY OUR NEW CREATIVE DASHBOARD</span>
+            <span class="marquee-text">TRY OUR NEW CREATIVE DASHBOARD</span>
+            <span class="marquee-text">TRY OUR NEW CREATIVE DASHBOARD</span>
+            <span class="marquee-text">TRY OUR NEW CREATIVE DASHBOARD</span>
+            <span class="marquee-text">TRY OUR NEW CREATIVE DASHBOARD</span>
+            <span class="marquee-text">TRY OUR NEW CREATIVE DASHBOARD</span>
+        </div>
+    </div>
     
     <!-- Sci-Fi Navigation Bar -->
     <nav class="sci-fi-nav" id="mainNav">
