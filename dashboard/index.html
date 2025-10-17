@@ -1796,6 +1796,8 @@
                 this.selectedCoreStyle = null;
                 // Robust aspect ratio cache for logo (handles SVG reliably)
                 this.logoAspectRatio = null; // width / height
+                this.logoAspectRatioPixels = null; // derived from visible content bbox
+                this.logoBitmap = null; // rasterized PNG version of the logo for iOS/mobile stability
                 
                 // FFmpeg for video export
                 this.ffmpeg = null;
@@ -1828,6 +1830,11 @@
                     const nh = this.logoImage && (this.logoImage.naturalHeight || this.logoImage.height);
                     if (nw && nh) {
                         this.logoAspectRatio = nw / nh;
+                        // Try pixel-based refinement if SVG
+                        if (this.logoImage.src && this.logoImage.src.toLowerCase().endsWith('.svg')) {
+                            const pxRatio = this.computeLogoAspectRatioFromPixels(nw, nh);
+                            if (pxRatio && isFinite(pxRatio) && pxRatio > 0) this.logoAspectRatio = pxRatio;
+                        }
                         return this.logoAspectRatio;
                     }
 
@@ -1844,6 +1851,9 @@
                                 const vbH = parts[3];
                                 if (vbW > 0 && vbH > 0) {
                                     this.logoAspectRatio = vbW / vbH;
+                                    // Pixel-based refinement
+                                    const pxRatio = this.computeLogoAspectRatioFromPixels(vbW, vbH);
+                                    if (pxRatio && isFinite(pxRatio) && pxRatio > 0) this.logoAspectRatio = pxRatio;
                                     return this.logoAspectRatio;
                                 }
                             }
@@ -1860,6 +1870,8 @@
                         const hAttr = parseLen(heightMatch && heightMatch[1]);
                         if (wAttr > 0 && hAttr > 0) {
                             this.logoAspectRatio = wAttr / hAttr;
+                            const pxRatio = this.computeLogoAspectRatioFromPixels(wAttr, hAttr);
+                            if (pxRatio && isFinite(pxRatio) && pxRatio > 0) this.logoAspectRatio = pxRatio;
                             return this.logoAspectRatio;
                         }
                     }
@@ -1870,6 +1882,69 @@
                 } catch (_) {
                     this.logoAspectRatio = 1;
                     return this.logoAspectRatio;
+                }
+            }
+
+            // Compute aspect ratio based on visible non-transparent pixels to avoid metadata issues on mobile SVG
+            computeLogoAspectRatioFromPixels(refW, refH) {
+                try {
+                    if (!this.logoImage || !this.logoImage.complete) return null;
+                    // Choose a reasonable raster size for analysis
+                    const targetW = Math.max(300, Math.min(800, refW || this.logoImage.width || 600));
+                    const targetH = Math.max(150, Math.min(800, refH || this.logoImage.height || 300));
+                    const off = document.createElement('canvas');
+                    off.width = targetW;
+                    off.height = targetH;
+                    const ctx = off.getContext('2d');
+                    ctx.clearRect(0, 0, targetW, targetH);
+                    ctx.drawImage(this.logoImage, 0, 0, targetW, targetH);
+                    const { data, width, height } = ctx.getImageData(0, 0, targetW, targetH);
+                    const alphaThreshold = 16;
+                    let minX = width, maxX = -1, minY = height, maxY = -1;
+                    for (let y = 0; y < height; y++) {
+                        for (let x = 0; x < width; x++) {
+                            const a = data[(y * width + x) * 4 + 3];
+                            if (a > alphaThreshold) {
+                                if (x < minX) minX = x;
+                                if (x > maxX) maxX = x;
+                                if (y < minY) minY = y;
+                                if (y > maxY) maxY = y;
+                            }
+                        }
+                    }
+                    if (maxX <= minX || maxY <= minY) return null;
+                    const bw = (maxX - minX + 1);
+                    const bh = (maxY - minY + 1);
+                    const ratio = bw / bh;
+                    this.logoAspectRatioPixels = ratio;
+                    return ratio;
+                } catch (_) {
+                    return null;
+                }
+            }
+
+            // Rasterize the logo (SVG or other) to a bitmap for stable drawImage rendering on mobile
+            async rasterizeLogoBitmap() {
+                try {
+                    if (!this.logoImage || !this.logoImage.complete) return;
+                    await this.ensureLogoAspectRatio();
+                    const targetW = 1024;
+                    const targetH = Math.max(1, Math.round(targetW / (this.logoAspectRatio || 1)));
+                    const off = document.createElement('canvas');
+                    off.width = targetW;
+                    off.height = targetH;
+                    const ctx = off.getContext('2d');
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    ctx.clearRect(0, 0, targetW, targetH);
+                    ctx.drawImage(this.logoImage, 0, 0, targetW, targetH);
+                    const dataUrl = off.toDataURL('image/png');
+                    const img = new Image();
+                    await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; img.src = dataUrl; });
+                    this.logoBitmap = img;
+                } catch (e) {
+                    console.warn('rasterizeLogoBitmap failed; fallback to SVG draw', e);
+                    this.logoBitmap = null;
                 }
             }
             
@@ -2328,7 +2403,8 @@
                     this.ctx.globalAlpha = this.logo.opacity;
                     this.ctx.imageSmoothingEnabled = true;
                     this.ctx.imageSmoothingQuality = 'high';
-                    this.ctx.drawImage(this.logoImage, this.logo.x, this.logo.y, this.logo.width, this.logo.height);
+                    const srcImg = this.logoBitmap || this.logoImage;
+                    this.ctx.drawImage(srcImg, this.logo.x, this.logo.y, this.logo.width, this.logo.height);
                     this.ctx.restore();
                 }
             }
@@ -2453,75 +2529,57 @@
             }
             
             async addLogo() {
-                if (!this.logo) {
-                    // Load logo image if not already loaded
-                    if (!this.logoImage) {
-                        this.logoImage = new Image();
-                        
-                        this.logoImage.onload = async () => {
-                            this.logoImageLoaded = true;
-                            // Compute a better anchor (vertical visual center)
-                            this.computeLogoAnchor();
-                            // Ensure we have aspect ratio and (re)center
-                            await this.ensureLogoAspectRatio();
-                            if (this.logo) {
-                                const logoWidth = 200;
-                                const logoHeight = logoWidth / this.logoAspectRatio;
-                                this.logo.width = logoWidth;
-                                this.logo.height = logoHeight;
-                                this.centerLogo();
-                            } else {
-                                this.render();
-                            }
-                        };
-                        
-                        this.logoImage.onerror = (e) => {
-                            console.error('Failed to load logo image');
-                            alert('Failed to load logo. Please check if corelogo.svg exists.');
-                        };
-                        
-                        // Logo is in the same directory as index.html
-                        this.logoImage.src = 'corelogo.svg';
-                    }
-                    
-                    // Calculate proper aspect ratio for logo
-                    let logoWidth = 200;
-                    let logoHeight = 200; // temporary until we resolve aspect ratio
-                    if (this.logoImage && this.logoImage.complete) {
+                if (this.logo) return; // already added
+                // Ensure logo image exists
+                if (!this.logoImage) {
+                    this.logoImage = new Image();
+                    this.logoImage.onload = async () => {
+                        this.logoImageLoaded = true;
+                        this.computeLogoAnchor();
                         await this.ensureLogoAspectRatio();
-                        logoHeight = logoWidth / this.logoAspectRatio;
-                    }
-                    
-                    // Create logo and immediately center using computed anchor
-                    this.logo = {
-                        x: 0,
-                        y: 0,
-                        width: logoWidth,
-                        height: logoHeight,
-                        opacity: 1
+                        const logoWidth = 200;
+                        const logoHeight = logoWidth / (this.logoAspectRatio || 1);
+                        this.logo = { x: 0, y: 0, width: logoWidth, height: logoHeight, opacity: 1 };
+                        // Show controls now that logo is ready
+                        this.removeLogoBtn.style.display = 'block';
+                        this.centerLogoBtn.style.display = 'block';
+                        this.logoSizeControl.style.display = 'block';
+                        this.logoOpacityControl.style.display = 'block';
+                        if (this.logoSizeSlider && this.logoSizeValue) {
+                            this.logoSizeSlider.value = logoWidth;
+                            this.logoSizeValue.textContent = logoWidth;
+                        }
+                        if (this.logoOpacitySlider && this.logoOpacityValue) {
+                            this.logoOpacitySlider.value = 100;
+                            this.logoOpacityValue.textContent = '100%';
+                        }
+                        this.centerLogo();
                     };
-                    this.centerLogo();
-                    
-                    // Synchronizuj suwaki z wartościami logo
-                    if (this.logoSizeSlider && this.logoSizeValue) {
-                        this.logoSizeSlider.value = logoWidth;
-                        this.logoSizeValue.textContent = logoWidth;
-                    }
-                    if (this.logoOpacitySlider && this.logoOpacityValue) {
-                        this.logoOpacitySlider.value = 100;
-                        this.logoOpacityValue.textContent = '100%';
-                    }
-                    
-                    this.removeLogoBtn.style.display = 'block';
-                    this.centerLogoBtn.style.display = 'block';
-                    this.logoSizeControl.style.display = 'block';
-                    this.logoOpacityControl.style.display = 'block';
-                    
-                    console.log('Logo object created at position:', this.logo);
-                    
-                    // If image is already loaded (cached), render immediately
-                    if (this.logoImageLoaded && this.logoImage.complete) {
-                        this.render();
+                    this.logoImage.onerror = () => {
+                        console.error('Failed to load logo image');
+                        alert('Failed to load logo. Please check if corelogo.svg exists.');
+                    };
+                    this.logoImage.src = 'corelogo.svg';
+                } else {
+                    // If already instantiated image and possibly cached
+                    if (this.logoImage.complete) {
+                        await this.ensureLogoAspectRatio();
+                        const logoWidth = 200;
+                        const logoHeight = logoWidth / (this.logoAspectRatio || 1);
+                        this.logo = { x: 0, y: 0, width: logoWidth, height: logoHeight, opacity: 1 };
+                        this.removeLogoBtn.style.display = 'block';
+                        this.centerLogoBtn.style.display = 'block';
+                        this.logoSizeControl.style.display = 'block';
+                        this.logoOpacityControl.style.display = 'block';
+                        if (this.logoSizeSlider && this.logoSizeValue) {
+                            this.logoSizeSlider.value = logoWidth;
+                            this.logoSizeValue.textContent = logoWidth;
+                        }
+                        if (this.logoOpacitySlider && this.logoOpacityValue) {
+                            this.logoOpacitySlider.value = 100;
+                            this.logoOpacityValue.textContent = '100%';
+                        }
+                        this.centerLogo();
                     }
                 }
             }
@@ -2771,8 +2829,8 @@
                             const ly = (this.logo.y - rect.offsetY) * uniformScale;
                             const lw = this.logo.width * uniformScale;
                             const lh = this.logo.height * uniformScale; // this.logo already has correct aspect ratio
-                            
-                            octx.drawImage(this.logoImage, lx, ly, lw, lh);
+                            const srcImg = this.logoBitmap || this.logoImage;
+                            octx.drawImage(srcImg, lx, ly, lw, lh);
                             octx.restore();
                         }
                         lastDraw = now;
@@ -3002,6 +3060,13 @@
                 
                 // Draw logo at proportionally scaled size
                 if (this.logo && this.logoImageLoaded && this.logoImage.complete) {
+                    // Ensure we have accurate logo aspect ratio resolved (for SVG)
+                    // Note: createHighResExport is sync, but ensureLogoAspectRatio sets cached ratio if already known
+                    if (!this.logoAspectRatio || !isFinite(this.logoAspectRatio)) {
+                        const nw = this.logoImage.naturalWidth || this.logoImage.width;
+                        const nh = this.logoImage.naturalHeight || this.logoImage.height;
+                        if (nw && nh) this.logoAspectRatio = nw / nh; else this.logoAspectRatio = 1;
+                    }
                     // Map from what the user sees (contain-fit with offsets) to full-resolution media space
                     const rect = this.getMediaDrawRect();
                     
@@ -3021,7 +3086,8 @@
                     const exportLogoHeight = this.logo.height * uniformScale;
                     
                     // this.logo already has correct aspect ratio, so use scaled dimensions directly
-                    exportCtx.drawImage(this.logoImage, exportLogoX, exportLogoY, exportLogoWidth, exportLogoHeight);
+                    const srcImg = this.logoBitmap || this.logoImage;
+                    exportCtx.drawImage(srcImg, exportLogoX, exportLogoY, exportLogoWidth, exportLogoHeight);
                     exportCtx.restore();
                 }
                 
