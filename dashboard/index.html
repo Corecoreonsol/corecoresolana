@@ -2712,11 +2712,6 @@
                 const rect = this.getMediaDrawRect();
                 // Use UNIFORM scale to preserve logo aspect ratio
                 const uniformScale = mediaWidth / rect.drawWidth;
-                
-                // Get logo's natural aspect ratio once
-                const logoNaturalWidth = this.logoImage ? (this.logoImage.naturalWidth || this.logoImage.width) : 1;
-                const logoNaturalHeight = this.logoImage ? (this.logoImage.naturalHeight || this.logoImage.height) : 1;
-                const logoAspectRatio = logoNaturalWidth / logoNaturalHeight;
 
                 const draw = (now) => {
                     if (!running) return;
@@ -2734,7 +2729,7 @@
                             const lx = (this.logo.x - rect.offsetX) * uniformScale;
                             const ly = (this.logo.y - rect.offsetY) * uniformScale;
                             const lw = this.logo.width * uniformScale;
-                            const lh = lw / logoAspectRatio; // Preserve aspect ratio
+                            const lh = this.logo.height * uniformScale; // this.logo already has correct aspect ratio
                             
                             octx.drawImage(this.logoImage, lx, ly, lw, lh);
                             octx.restore();
@@ -2984,16 +2979,8 @@
                     const exportLogoWidth = this.logo.width * uniformScale;
                     const exportLogoHeight = this.logo.height * uniformScale;
                     
-                    // Get logo's natural aspect ratio
-                    const logoNaturalWidth = this.logoImage.naturalWidth || this.logoImage.width;
-                    const logoNaturalHeight = this.logoImage.naturalHeight || this.logoImage.height;
-                    const logoAspectRatio = logoNaturalWidth / logoNaturalHeight;
-                    
-                    // Preserve logo aspect ratio - adjust height based on width
-                    const finalLogoWidth = exportLogoWidth;
-                    const finalLogoHeight = exportLogoWidth / logoAspectRatio;
-                    
-                    exportCtx.drawImage(this.logoImage, exportLogoX, exportLogoY, finalLogoWidth, finalLogoHeight);
+                    // this.logo already has correct aspect ratio, so use scaled dimensions directly
+                    exportCtx.drawImage(this.logoImage, exportLogoX, exportLogoY, exportLogoWidth, exportLogoHeight);
                     exportCtx.restore();
                 }
                 
