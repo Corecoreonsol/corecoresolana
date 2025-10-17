@@ -1280,7 +1280,7 @@
                 overflow: visible;
                 padding-bottom: 35vh; /* Slightly reduced from 40vh */
             }            .pfp-panel {
-                min-height: 280px;
+                min-height: 280px; /* Prostokątny jak był Core Editor */
                 height: auto;
             }
             
@@ -1290,9 +1290,8 @@
             }
 
             .editor-canvas-area {
-                min-height: 250px;
+                min-height: 250px; /* Kwadratowy jak był PFP */
                 max-height: 250px;
-                aspect-ratio: 1;
                 width: 250px;
                 margin: 0 auto;
             }
@@ -1429,9 +1428,9 @@
             <p class="pfp-subtitle">Transform your image with CORE aura effects</p>
             
             <div class="pfp-upload-area" id="pfpMainArea">
-                <div class="editor-upload-icon">📁</div>
-                <p style="font-size: 1rem; margin-bottom: 0.4rem; font-weight: 300;">Upload your image or video</p>
-                <p style="font-size: 0.85rem; opacity: 0.6;">Click to browse or drag and drop</p>
+                <div class="upload-icon">+</div>
+                <div class="upload-text">Upload or drag an image here</div>
+                <div class="upload-hint">to generate its aura</div>
                 <button class="upload-button" id="pfpUploadBtn">UPLOAD AN IMAGE</button>
                 <input type="file" id="pfpImageInput" accept="image/*" style="display: none;">
             </div>
@@ -1449,9 +1448,9 @@
             <div class="editor-canvas-area">
                 <div class="canvas-wrapper" id="canvasWrapper">
                     <div class="editor-upload-placeholder" id="uploadPlaceholder">
-                        <div class="upload-icon">+</div>
-                        <div class="upload-text">Upload or drag an image here</div>
-                        <div class="upload-hint">to generate its aura</div>
+                        <div class="editor-upload-icon">📁</div>
+                        <p style="font-size: 1rem; margin-bottom: 0.4rem; font-weight: 300;">Upload your image or video</p>
+                        <p style="font-size: 0.85rem; opacity: 0.6;">Click to browse or drag and drop</p>
                     </div>
                     <canvas id="editorCanvas" style="display: none;"></canvas>
                 </div>
