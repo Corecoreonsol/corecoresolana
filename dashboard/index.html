@@ -1874,9 +1874,16 @@
                 if (this.logoSizeSlider && this.logoSizeValue) {
                     this.logoSizeSlider.addEventListener('input', (e) => {
                         this.logoSizeValue.textContent = e.target.value;
-                        if (this.logo) {
-                            this.logo.width = parseInt(e.target.value);
-                            this.logo.height = parseInt(e.target.value);
+                        if (this.logo && this.logoImage) {
+                            const newWidth = parseInt(e.target.value);
+                            // Calculate height to preserve aspect ratio
+                            const logoNaturalWidth = this.logoImage.naturalWidth || this.logoImage.width;
+                            const logoNaturalHeight = this.logoImage.naturalHeight || this.logoImage.height;
+                            const logoAspectRatio = logoNaturalWidth / logoNaturalHeight;
+                            const newHeight = newWidth / logoAspectRatio;
+                            
+                            this.logo.width = newWidth;
+                            this.logo.height = newHeight;
                             this.render();
                         }
                     });
@@ -2404,6 +2411,17 @@
                             this.computeLogoAnchor();
                             // If logo already created, re-center using the computed anchor
                             if (this.logo) {
+                                // Recalculate logo dimensions with proper aspect ratio now that image is loaded
+                                const logoNaturalWidth = this.logoImage.naturalWidth || this.logoImage.width;
+                                const logoNaturalHeight = this.logoImage.naturalHeight || this.logoImage.height;
+                                const logoAspectRatio = logoNaturalWidth / logoNaturalHeight;
+                                
+                                const logoWidth = 200;
+                                const logoHeight = logoWidth / logoAspectRatio;
+                                
+                                this.logo.width = logoWidth;
+                                this.logo.height = logoHeight;
+                                
                                 this.centerLogo();
                             } else {
                                 this.render();
@@ -2419,8 +2437,18 @@
                         this.logoImage.src = 'corelogo.svg';
                     }
                     
-                    const logoWidth = 200;
-                    const logoHeight = 200;
+                    // Calculate proper aspect ratio for logo
+                    let logoWidth = 200;
+                    let logoHeight = 200; // Default square, will be corrected when image loads
+                    
+                    // If image is already loaded, use its actual aspect ratio
+                    if (this.logoImage && this.logoImage.complete && this.logoImage.naturalWidth) {
+                        const logoNaturalWidth = this.logoImage.naturalWidth || this.logoImage.width;
+                        const logoNaturalHeight = this.logoImage.naturalHeight || this.logoImage.height;
+                        const logoAspectRatio = logoNaturalWidth / logoNaturalHeight;
+                        logoHeight = logoWidth / logoAspectRatio;
+                    }
+                    
                     // Create logo and immediately center using computed anchor
                     this.logo = {
                         x: 0,
