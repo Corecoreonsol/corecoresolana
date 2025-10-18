@@ -10,7 +10,7 @@
     <link rel="icon" type="image/jpeg" href="/images/favicon.jpg">
     
     <!-- Preload Critical Assets -->
-    <link rel="preload" href="corelogo.svg" as="image" type="image/svg+xml">
+    <link rel="preload" href="/dashboard/corelogo.svg" as="image" type="image/svg+xml">
     
     <style>
         /* ===== CORE COLOR PALETTE - EXACT FROM MAIN SITE ===== */
@@ -1436,7 +1436,7 @@
         <!-- Dashboard Header -->
         <header class="dashboard-header">
             <a href="../index.html#top-section" class="dashboard-logo">
-                <img src="corelogo.svg" alt="CORE">
+                <img src="/dashboard/corelogo.svg" alt="CORE">
                 <h1>CREATIVE DASHBOARD</h1>
             </a>
             <a href="../index.html#top-section" class="back-btn">← BACK TO HOME</a>
@@ -1942,7 +1942,7 @@
                         // If tainted (e.g., SVG loaded in a way that taints canvas), try sanitizing by reloading SVG as a data URL
                         console.warn('Logo rasterization tainted; attempting SVG sanitize reload:', taintErr.message);
                         try {
-                            const src = this.logoImage.src || 'corelogo.svg';
+                            const src = this.logoImage.src || '/dashboard/corelogo.svg';
                             let svgText = null;
                             // Prefer to fetch the original SVG text (same-origin)
                             try {
@@ -1954,7 +1954,7 @@
                             // If fetch failed and the src looks like a relative corelogo path, try that directly
                             if (!svgText && !/^data:/i.test(src)) {
                                 try {
-                                    const resp2 = await fetch('corelogo.svg');
+                                    const resp2 = await fetch('/dashboard/corelogo.svg');
                                     if (resp2.ok) svgText = await resp2.text();
                                 } catch (_) { /* ignore */ }
                             }
@@ -2541,7 +2541,7 @@
                         alert('Failed to load logo. Please check if corelogo.svg exists in the same folder.');
                     };
                     // Load SVG as same-origin data URL to avoid any cross-origin taint
-                    fetch('corelogo.svg')
+                    fetch('/dashboard/corelogo.svg')
                         .then(resp => resp.ok ? resp.text() : Promise.reject(new Error('HTTP ' + resp.status)))
                         .then(svgText => {
                             const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText);
@@ -2549,7 +2549,7 @@
                         })
                         .catch(() => {
                             // Fallback to direct path if fetch fails (e.g., older environments)
-                            this.logoImage.src = 'corelogo.svg';
+                            this.logoImage.src = '/dashboard/corelogo.svg';
                         });
                 } else {
                     // If already instantiated image and possibly cached
@@ -2821,14 +2821,14 @@
                         this.logoImage.onerror = () => resolve();
                         
                         // Load SVG as data URL to avoid CORS
-                        fetch('corelogo.svg')
+                        fetch('/dashboard/corelogo.svg')
                             .then(resp => resp.text())
                             .then(svgText => {
                                 const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText);
                                 this.logoImage.src = dataUrl;
                             })
                             .catch(() => {
-                                this.logoImage.src = 'corelogo.svg';
+                                this.logoImage.src = '/dashboard/corelogo.svg';
                             });
                     } else {
                         resolve();
@@ -3156,3 +3156,4 @@
     </script>
 </body>
 </html>
+
