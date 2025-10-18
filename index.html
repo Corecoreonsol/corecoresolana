@@ -4991,7 +4991,7 @@
             }
             
             .dashboard-button {
-                top: calc(50% + clamp(35px, 6vh, 50px)); /* Bliżej logo na mobile */
+                top: calc(50% + clamp(25px, 4vh, 35px)); /* Jeszcze bliżej logo na mobile */
                 font-size: clamp(0.6rem, 1.5vw, 0.7rem); /* Mniejszy tekst */
                 padding: clamp(6px, 1.5vw, 8px) clamp(16px, 4vw, 20px); /* Mniejszy padding */
                 letter-spacing: 0.12em; /* Zmniejszone letter-spacing */
@@ -5009,7 +5009,7 @@
             }
             
             .header-actions { 
-                bottom: clamp(30px, 4vh, 50px); /* Wyżej - odsuń od dolnej krawędzi */
+                bottom: clamp(45px, 6vh, 65px); /* Jeszcze wyżej - bardziej odsuń od dolnej krawędzi */
                 gap: clamp(16px, 2.5vh, 20px); /* Responsywny gap */
                 margin-top: 0; /* Reset - używamy bottom */
             }
@@ -5058,7 +5058,7 @@
             }
             
             .header-actions {
-                bottom: clamp(40px, 5vh, 60px); /* Wyżej - odsuń od dolnej krawędzi małych telefonów */
+                bottom: clamp(55px, 7vh, 75px); /* Jeszcze wyżej - małe telefony */
             }
             
             .header-buy-now {
@@ -5085,7 +5085,7 @@
             }
             
             .header-actions {
-                bottom: clamp(50px, 6vh, 70px); /* Wyżej - odsuń od dolnej krawędzi średnich/dużych telefonów */
+                bottom: clamp(65px, 8vh, 85px); /* Jeszcze wyżej - średnie/duże telefony */
             }
             
             .header-buy-now {
@@ -7006,12 +7006,12 @@
                 
                 // Core community profiles - duplicate for infinite scroll
                 this.profiles = [
-                    { name: "Slingor", handle: "@slingor", image: "images/kols/slingor.jpg", link: "https://x.com/slingdeez" },
+                    { name: "DLN", handle: "@xbtDLN", image: "images/kols/photo_2025-08-09_07-20-57.jpg", link: "https://x.com/xbtDLN" },
                     { name: "Shadow", handle: "@shadow", image: "images/kols/shadow.jpg", link: "https://x.com/_Shadow36" },
                     { name: "Poe", handle: "@poe", image: "images/kols/poe.jpg", link: "https://x.com/poe_real69" },
                     { name: "Gake", handle: "@gake", image: "images/kols/gake.jpg", link: "https://x.com/Ga__ke" },
                     { name: "Fomo", handle: "@fomomofosol", image: "images/kols/photo_2025-08-09_07-20-58.jpg", link: "https://x.com/fomomofosol" },
-                    { name: "DLN", handle: "@xbtDLN", image: "images/kols/photo_2025-08-09_07-20-57.jpg", link: "https://x.com/xbtDLN" },
+                    { name: "Slingor", handle: "@slingor", image: "images/kols/slingor.jpg", link: "https://x.com/slingdeez" },
                     { name: "artsch00lreject", handle: "@artsch00lreject", image: "images/kols/photo_2025-08-09_07-20-57 (2).jpg", link: "https://x.com/artsch00lreject" },
                     { name: "OGAntD", handle: "@0GAntD", image: "images/kols/photo_2025-08-09_07-20-56.jpg", link: "https://x.com/0GAntD" }
                 ];
@@ -7061,11 +7061,12 @@
             }
             
             scrollToCenter() {
-                // Scroll to middle set, starting at Fomo card (index 4)
+                // Scroll to middle set, starting at Gake card (index 3)
                 setTimeout(() => {
-                    const middleSetStart = this.scrollContainer.scrollWidth / 3;
-                    const fomoOffset = 4 * this.cardWidth; // Fomo is 5th card (index 4)
-                    this.scrollContainer.scrollLeft = middleSetStart + fomoOffset;
+                    const cardsPerSet = this.profiles.length; // 8 cards
+                    const middleSetStart = cardsPerSet * this.cardWidth; // Start of middle set (2nd set)
+                    const gakeOffset = 1 * this.cardWidth; // Gake is 4th card (index 3), but need offset 1 to center it properly
+                    this.scrollContainer.scrollLeft = middleSetStart + gakeOffset;
                     this.updateActiveCards();
                 }, 100);
             }
