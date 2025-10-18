@@ -1,9 +1,21 @@
-﻿{
+{
   "rewrites": [
-    { "source": "/dashboard", "destination": "/dashboard/index.html" },
-    { "source": "/dashboard/", "destination": "/dashboard/index.html" },
-    { "source": "/api/apply-style", "destination": "/api/apply-style.js" },
-    { "source": "/api/generate-avatar", "destination": "/api/generate-avatar.js" }
+    {
+      "source": "/dashboard",
+      "destination": "/dashboard/index.html"
+    },
+    {
+      "source": "/dashboard/",
+      "destination": "/dashboard/index.html"
+    },
+    {
+      "source": "/api/apply-style",
+      "destination": "/api/apply-style.js"
+    },
+    {
+      "source": "/api/generate-avatar",
+      "destination": "/api/generate-avatar.js"
+    }
   ],
   "functions": {
     "api/apply-style.js": {
