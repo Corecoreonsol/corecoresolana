@@ -2,6 +2,7 @@
 const OpenAI = require('openai');
 const sharp = require('sharp');
 const multer = require('multer');
+const { toFile } = require('openai');
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -75,8 +76,8 @@ module.exports = async (req, res) => {
 - Keep the original subject recognizable but make it look powered by cosmic blue energy
 - Style should feel like a premium digital art piece with professional quality`;
 
-    // Create optimized file object
-    const imageFile = new File([optimizedBuffer], req.file.originalname || 'image.jpg', {
+    // Create optimized file object using toFile (works in Node.js/Vercel)
+    const imageFile = await toFile(optimizedBuffer, 'avatar.jpg', {
       type: 'image/jpeg'
     });
     
