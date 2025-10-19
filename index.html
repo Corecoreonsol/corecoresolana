@@ -2387,7 +2387,7 @@
 
         @keyframes marquee {
             0% { transform: translate3d(0, 0, 0); }
-            100% { transform: translate3d(-33.333%, 0, 0); }
+            100% { transform: translate3d(-50%, 0, 0); }
         }
         
         .art-item {
@@ -2472,7 +2472,7 @@
 
         @keyframes marquee {
             0% { transform: translate3d(0, 0, 0); }
-            100% { transform: translate3d(-33.333%, 0, 0); }
+            100% { transform: translate3d(-50%, 0, 0); }
         }
         
         .art-item {
@@ -2767,14 +2767,14 @@
             
             .carousel-row {
                 gap: 10px; /* Zmniejszony gap między obrazkami na mobile */
-                /* Szybsza animacja na mobile z płynnym loopem */
-                animation-duration: 15s !important;
+                /* Szybsza animacja na mobile - umiarkowanie szybka dla płynności */
+                animation-duration: 25s !important;
                 animation-timing-function: linear !important;
             }
             
             .carousel-row.reverse {
                 /* Ta sama prędkość co normalna karuzela, tylko w odwrotnym kierunku */
-                animation-duration: 15s !important;
+                animation-duration: 25s !important;
                 animation-timing-function: linear !important;
             }
             
@@ -7249,9 +7249,9 @@
                 const rows = document.querySelectorAll('.carousel-row');
                 rows.forEach(row => {
                     if (!row || row.dataset.duplicated === 'true') return;
-                    // Triple the content for smoother infinite loop on fast mobile animations
+                    // Double the content for seamless infinite loop
                     const originalContent = row.innerHTML;
-                    row.innerHTML = originalContent + originalContent + originalContent;
+                    row.innerHTML = originalContent + originalContent;
                     row.dataset.duplicated = 'true';
                 });
             } catch(e) { /* no-op */ }
