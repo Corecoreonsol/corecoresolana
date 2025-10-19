@@ -7263,8 +7263,9 @@
                         row.style.animation = 'none';
                         
                         const isReverse = row.classList.contains('reverse');
-                        const speed = 0.5; // pixels per frame (faster than before)
+                        const speed = 2; // pixels per frame - much faster
                         let position = 0;
+                        const halfWidth = row.scrollWidth / 2;
                         
                         function animate() {
                             if (row.classList.contains('paused')) {
@@ -7274,18 +7275,25 @@
                             
                             if (isReverse) {
                                 position += speed;
-                                if (position >= row.scrollWidth / 2) {
-                                    position = 0;
+                                // When we reach the end, reset to negative half to create seamless loop
+                                if (position >= 0) {
+                                    position = -halfWidth;
                                 }
                             } else {
                                 position -= speed;
-                                if (position <= -row.scrollWidth / 2) {
+                                // When we reach negative half, reset to 0 for seamless loop
+                                if (position <= -halfWidth) {
                                     position = 0;
                                 }
                             }
                             
                             row.style.transform = `translate3d(${position}px, 0, 0)`;
                             requestAnimationFrame(animate);
+                        }
+                        
+                        // Initialize reverse position
+                        if (isReverse) {
+                            position = -halfWidth;
                         }
                         
                         requestAnimationFrame(animate);
