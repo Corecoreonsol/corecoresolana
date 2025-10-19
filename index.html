@@ -2360,8 +2360,8 @@
         }
 
         .carousel-row.reverse {
-            /* reverse row slightly slower for visual contrast */
-            animation-duration: 100s; /* slower on desktop */
+            /* Ta sama prędkość co normalna karuzela, tylko w odwrotnym kierunku */
+            animation-duration: 75s; /* taka sama jak normalna karuzela */
             animation-direction: reverse;
             transform: translateZ(0); /* Force GPU acceleration */
             backface-visibility: hidden;
@@ -2386,8 +2386,8 @@
         }
 
         @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-33.333%, 0, 0); }
         }
         
         .art-item {
@@ -2471,8 +2471,8 @@
         }
 
         @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-33.333%, 0, 0); }
         }
         
         .art-item {
@@ -2767,13 +2767,15 @@
             
             .carousel-row {
                 gap: 10px; /* Zmniejszony gap między obrazkami na mobile */
-                /* PRZYŚPIESZONA animacja na mobile - bardzo szybka */
-                animation-duration: 8s !important;
+                /* Szybsza animacja na mobile z płynnym loopem */
+                animation-duration: 15s !important;
+                animation-timing-function: linear !important;
             }
             
             .carousel-row.reverse {
-                /* Również szybciej dla reverse */
-                animation-duration: 12s !important;
+                /* Ta sama prędkość co normalna karuzela, tylko w odwrotnym kierunku */
+                animation-duration: 15s !important;
+                animation-timing-function: linear !important;
             }
             
             .art-grid {
@@ -7247,7 +7249,9 @@
                 const rows = document.querySelectorAll('.carousel-row');
                 rows.forEach(row => {
                     if (!row || row.dataset.duplicated === 'true') return;
-                    row.innerHTML = row.innerHTML + row.innerHTML;
+                    // Triple the content for smoother infinite loop on fast mobile animations
+                    const originalContent = row.innerHTML;
+                    row.innerHTML = originalContent + originalContent + originalContent;
                     row.dataset.duplicated = 'true';
                 });
             } catch(e) { /* no-op */ }
