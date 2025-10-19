@@ -7247,14 +7247,51 @@
         (function initSeamlessCarousels(){
             try {
                 const rows = document.querySelectorAll('.carousel-row');
+                const isMobile = window.innerWidth <= 768;
+                
                 rows.forEach(row => {
                     if (!row || row.dataset.duplicated === 'true') return;
+                    
                     // Double the content for seamless infinite loop
                     const originalContent = row.innerHTML;
                     row.innerHTML = originalContent + originalContent;
                     row.dataset.duplicated = 'true';
+                    
+                    // On mobile, use JavaScript animation instead of CSS for smoother control
+                    if (isMobile) {
+                        // Disable CSS animation on mobile
+                        row.style.animation = 'none';
+                        
+                        const isReverse = row.classList.contains('reverse');
+                        const speed = 0.5; // pixels per frame (faster than before)
+                        let position = 0;
+                        
+                        function animate() {
+                            if (row.classList.contains('paused')) {
+                                requestAnimationFrame(animate);
+                                return;
+                            }
+                            
+                            if (isReverse) {
+                                position += speed;
+                                if (position >= row.scrollWidth / 2) {
+                                    position = 0;
+                                }
+                            } else {
+                                position -= speed;
+                                if (position <= -row.scrollWidth / 2) {
+                                    position = 0;
+                                }
+                            }
+                            
+                            row.style.transform = `translate3d(${position}px, 0, 0)`;
+                            requestAnimationFrame(animate);
+                        }
+                        
+                        requestAnimationFrame(animate);
+                    }
                 });
-            } catch(e) { /* no-op */ }
+            } catch(e) { console.error('Carousel init error:', e); }
         })();
 
         // Art Carousel Hover Pause
