@@ -799,15 +799,20 @@
             border-bottom: none;
         }
 
-        /* Default colors for raptorcore and auracore */
+        /* Default colors for raptorcore, pumpcore, and auracore */
         .core-style-option[data-style="raptorcore"] {
             color: #ff8c00;
             border-bottom: 1px solid rgba(255, 140, 0, 0.1);
         }
 
+        .core-style-option[data-style="pumpcore"] {
+            color: #83efaa;
+            border-bottom: 1px solid rgba(131, 239, 170, 0.1);
+        }
+
         .core-style-option[data-style="auracore"] {
-            color: #00ff7f;
-            border-bottom: 1px solid rgba(0, 255, 127, 0.1);
+            color: #a6e244;
+            border-bottom: 1px solid rgba(166, 226, 68, 0.1);
         }
 
         .core-style-option:hover {
@@ -816,17 +821,23 @@
             text-shadow: 0 0 10px var(--core-cyan);
         }
 
-        /* Specific hover colors for raptorcore and auracore */
+        /* Specific hover colors for raptorcore, pumpcore, and auracore */
         .core-style-option[data-style="raptorcore"]:hover {
             background: rgba(255, 140, 0, 0.15);
             color: #ff8c00;
             text-shadow: 0 0 10px #ff8c00;
         }
 
+        .core-style-option[data-style="pumpcore"]:hover {
+            background: rgba(131, 239, 170, 0.15);
+            color: #83efaa;
+            text-shadow: 0 0 10px #83efaa;
+        }
+
         .core-style-option[data-style="auracore"]:hover {
-            background: rgba(0, 255, 127, 0.15);
-            color: #00ff7f;
-            text-shadow: 0 0 10px #00ff7f;
+            background: rgba(166, 226, 68, 0.15);
+            color: #a6e244;
+            text-shadow: 0 0 10px #a6e244;
         }
 
         .core-style-option.selected {
@@ -841,10 +852,16 @@
             border-left: 2px solid #ff8c00;
         }
 
+        .core-style-option[data-style="pumpcore"].selected {
+            background: rgba(131, 239, 170, 0.25);
+            color: #83efaa;
+            border-left: 2px solid #83efaa;
+        }
+
         .core-style-option[data-style="auracore"].selected {
-            background: rgba(0, 255, 127, 0.25);
-            color: #00ff7f;
-            border-left: 2px solid #00ff7f;
+            background: rgba(166, 226, 68, 0.25);
+            color: #a6e244;
+            border-left: 2px solid #a6e244;
         }
 
         .core-style-card.selected .core-style-name {
@@ -1435,11 +1452,11 @@
     <div class="dashboard-wrapper">
         <!-- Dashboard Header -->
         <header class="dashboard-header">
-            <a href="../index.html#top-section" class="dashboard-logo">
+            <a href="/" class="dashboard-logo">
                 <img src="/dashboard/corelogo.svg" alt="CORE">
                 <h1>CREATIVE DASHBOARD</h1>
             </a>
-            <a href="../index.html#top-section" class="back-btn">← BACK TO HOME</a>
+            <a href="/" class="back-btn">← BACK TO HOME</a>
         </header>
 
         <!-- Dashboard Main Container -->
@@ -1520,6 +1537,7 @@
                     </button>
                     <div class="core-style-dropdown" id="styleDropdown" style="display: none;">
                         <div class="core-style-option" data-style="raptorcore">RAPTORCORE</div>
+                        <div class="core-style-option" data-style="pumpcore">PUMPCORE</div>
                         <div class="core-style-option" data-style="auracore">AURACORE</div>
                         <div class="core-style-option" data-style="cybercore">CYBERCORE</div>
                         <div class="core-style-option" data-style="dreamcore">DREAMCORE</div>
@@ -2222,8 +2240,9 @@
                     'pixelcore': 'transform this image into PixelCore style - maintain the original composition and subject, but reinterpret it through a pixel-art aesthetic that feels crisp, nostalgic, and digital. reconstruct the world with visible pixels, clear outlines, and simplified color shading that evokes classic game or early computer graphics. preserve detail where necessary, but express it through blocky structure and pixel-based texture instead of smooth gradients. introduce faint screen artifacts such as scanlines, CRT glow, or limited color palettes that give it retro authenticity. integrate multiple glowing infinity symbols throughout the scene - appearing as pixel icons, holographic glyphs, or repeating light patterns - representing infinite digital connection. keep everything balanced, vivid, and structured; the final image should feel like a living 16-bit universe rendered in modern clarity. generate as a 1x1 image ratio.',
                     'alonecore': 'transform this image into AloneCore style - maintain the original composition and subject, but reinterpret it to express solitude, stillness, and quiet self-awareness. slightly reduce saturation and contrast to evoke emotional calm, using soft natural light and open negative space to emphasize isolation without sadness. if a person is present, depict them with a thoughtful or distant demeanor, surrounded by quiet emptiness that feels peaceful rather than painful. integrate multiple faint, glowing infinity symbols into the environment - appearing as subtle reflections, distant lights, or soft patterns in the background - symbolizing inner connection and continuity even in solitude. avoid heavy haze or distortion; keep everything grounded, quiet, and sincere. the final image should feel introspective, calm, and human - the moment when being alone becomes understanding. generate as a 1x1 image ratio.',
                     'raptorcore': 'Transform the subject of the provided image into their RaptorCore form - a powerful, intelligent velociraptor version of themselves - while keeping the exact same composition, pose, camera angle, lighting, and background as the original image. The transformation must look natural and seamless, as if revealing the subject\'s primal essence rather than replacing them. Preserve all defining visual traits of the original subject - including skin tone, hairstyle, clothing, posture, and recognizable details - and reinterpret them through a raptor-like anatomy with realistic textures, musculature, and facial structure. The raptor version should retain the subject\'s personality, expression, and energy. Add sleek scales, defined musculature, and sharp, aware eyes, with dynamic lighting that conveys strength and sentience. Integrate faint, glowing infinity symbols subtly throughout the environment and character - appearing as markings on scales, reflections in the eyes, or faint energy traces in the air - symbolizing evolution, instinct, and infinite adaptability. The overall tone should be cinematic, powerful, confident, and vivid, showing the fusion of human identity and ancient strength. Aspect ratio: 1x1. Instruction: Maintain every original element of the scene except the biological transformation itself.',
+                    'pumpcore': 'transform this image into PumpCore style - maintain the original composition and subject, but reinterpret it through a futuristic medicine and capsule aesthetic. infuse the scene with sleek, pharmaceutical precision - smooth surfaces, clean geometry, and subtle reflections reminiscent of advanced medical technology. introduce glowing capsule-shaped elements, soft holographic overlays, and faint light trails that suggest healing, energy, and enhancement. use a vibrant green color palette (#83efaa) as the dominant tone, blending it into lighting, reflections, and ambient glow to evoke vitality and health. integrate multiple faint, glowing infinity symbols throughout the environment - appearing as holographic markers, energy traces, or patterns within capsule designs - symbolizing infinite wellness and continuous improvement. add subtle particle effects, soft depth blur, and clean lens reflections that give the image a polished, next-generation pharmaceutical vibe. the overall feeling should be optimistic, innovative, and life-affirming - a vision of the future where medicine and technology merge to elevate humanity. generate as a 1x1 image ratio.',
                     'clowncore': 'transform this image into ClownCore style - maintain the original composition and subject, but reinterpret it through a chaotic, surreal, and expressive clown aesthetic. enhance the world with vibrant color contrasts, mismatched patterns, and eccentric textures like sequins, satin, and face paint. give the subject clown-like features while preserving their recognizable identity - expressive makeup, exaggerated emotions, or playful accessories that feel natural within the scene rather than costume-like. incorporate absurd yet stylish details such as striped fabric, polka dots, or colorful lighting that hint at both humor and existential depth. integrate multiple faint, glowing infinity symbols throughout - appearing in makeup reflections, balloon surfaces, neon lights, or background motifs - representing the endless loop between joy and madness. avoid horror tones; keep it artful, bold, and self-aware. the final image should feel bizarrely beautiful - a celebration of chaos, humor, and humanity existing all at once. generate as a 1x1 image ratio.',
-                    'auracore': 'transform this image into AuraCore style - maintain the original composition and subject, but reinterpret it through a glowing, digital-spiritual aesthetic that radiates energy and meaning. illuminate the world with soft neon-green light, creating an aura that feels alive and infinite. add a fine layer of film grain and glow, balancing clarity with subtle distortion to evoke otherworldly calm. integrate multiple glowing infinity symbols throughout the image - appearing as energy trails, reflections, light rings, or background motifs - representing the infinite bond between self and aura. highlight shapes and silhouettes with smooth gradients, faint bloom, and clean geometry, blending minimalism with cosmic warmth. preserve the image\'s tone and palette but amplify it with luminous green accents that feel pure and intentional. the final result should radiate balance, energy, and transcendence - every inch glowing with aura. generate as a 1x1 image ratio.',
+                    'auracore': 'transform this image into AuraCore style - maintain the original composition and subject, but reinterpret it through a glowing, digital-spiritual aesthetic that radiates energy and meaning. illuminate the world with soft glowing light in the color #a6e244, creating an aura that feels alive and infinite. add a fine layer of film grain and glow, balancing clarity with subtle distortion to evoke otherworldly calm. integrate multiple glowing infinity symbols throughout the image - appearing as energy trails, reflections, light rings, or background motifs - representing the infinite bond between self and aura. highlight shapes and silhouettes with smooth gradients, faint bloom, and clean geometry, blending minimalism with cosmic warmth. preserve the image\'s tone and palette but amplify it with luminous accents in #a6e244 that feel pure and intentional. the final result should radiate balance, energy, and transcendence - every inch glowing with aura. generate as a 1x1 image ratio.',
                     'spacecore': 'transform this image into SpaceCore style - maintain the original composition and subject, but reinterpret it through a vast, cinematic, and galactic aesthetic. immerse the scene in deep cosmic color and glowing starlight - vibrant blues, purples, and greens blending into infinite darkness. fill the background with planets, nebulae, asteroids, and glowing particles that convey depth and motion. illuminate the subject with soft, directional cosmic light that feels otherworldly but balanced. integrate multiple glowing infinity symbols throughout the environment - appearing as constellations, orbit rings, distant light patterns, or energy trails - symbolizing infinite connection across space and time. add subtle lens flares, particle dust, and light scattering to create realism and scale. the final image should feel boundless, luminous, and transcendent - a universe alive with infinite motion and meaning. generate as a 1x1 image ratio.',
                     'catcore': 'transform this image into CatCore style - maintain the original composition and subject, but reinterpret them as a cat version of themselves while preserving all defining features. keep their skin tone, hair color, clothing, accessories, and recognizable details fully intact, seamlessly adapted into feline anatomy. the result should feel natural and expressive, as if this transformation reveals their true calm, curious essence rather than replaces them. emphasize soft fur texture, expressive eyes, and subtle feline grace, keeping the pose and emotion exactly the same. integrate multiple faint, glowing infinity symbols within the environment and design - appearing as reflections in eyes, markings in fur, or ambient background glows - symbolizing instinct, awareness, and infinite curiosity. the final image should radiate intelligence, balance, and quiet confidence - the essence of Core energy through feline form. generate as a 1x1 image ratio.',
                     'dogcore': 'transform this image into DogCore style - keep the image exactly the same in composition, lighting, and clarity, but reinterpret the subject as a dog version of themselves. preserve every defining feature - their skin tone, hair color, clothing, accessories, and recognizable details - seamlessly adapted into realistic canine anatomy. the transformation should feel completely natural, as if they have always been this way. emphasize lifelike fur texture, expressive eyes, and authentic emotion, matching the original expression and posture perfectly. integrate multiple faint, glowing infinity symbols subtly throughout - appearing as reflections in eyes, markings in fur, or background light patterns - symbolizing loyalty, companionship, and infinite devotion. do not stylize, repaint, or blur anything; just transform the subject into their true dog form while keeping every other element identical. generate as a 1x1 image ratio.'
