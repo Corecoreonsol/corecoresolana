@@ -15,6 +15,10 @@
     {
       "source": "/api/generate-avatar",
       "destination": "/api/generate-avatar.js"
+    },
+    {
+      "source": "/api/whale-verify/:path*",
+      "destination": "/api/whale-verify.js"
     }
   ],
   "functions": {
@@ -25,6 +29,10 @@
     "api/generate-avatar.js": {
       "memory": 1024,
       "maxDuration": 60
+    },
+    "api/whale-verify.js": {
+      "memory": 1024,
+      "maxDuration": 30
     }
   }
 }
