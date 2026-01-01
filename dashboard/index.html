@@ -2109,6 +2109,7 @@
                 
                 // Sliders - dodaj sprawdzenie czy elementy istnieją
                 if (this.logoSizeSlider && this.logoSizeValue) {
+                    let sizeThrottle = null;
                     this.logoSizeSlider.addEventListener('input', async (e) => {
                         this.logoSizeValue.textContent = e.target.value;
                         if (this.logo) {
@@ -2117,34 +2118,55 @@
                             const newHeight = newWidth / (this.logoAspectRatio || 1);
                             this.logo.width = newWidth;
                             this.logo.height = newHeight;
-                            this.render();
                         }
+                        
+                        // Throttle render for smooth performance
+                        if (sizeThrottle) clearTimeout(sizeThrottle);
+                        sizeThrottle = setTimeout(() => {
+                            this.render();
+                            sizeThrottle = null;
+                        }, 30);
                     });
                 } else {
                     console.error('Logo size slider or value element not found');
                 }
                 
                 if (this.logoOpacitySlider && this.logoOpacityValue) {
+                    let opacityThrottle = null;
                     this.logoOpacitySlider.addEventListener('input', (e) => {
                         this.logoOpacityValue.textContent = e.target.value + '%';
                         if (this.logo) {
                             this.logo.opacity = parseInt(e.target.value) / 100;
-                            this.render();
                         }
+                        
+                        // Throttle render for smooth performance
+                        if (opacityThrottle) clearTimeout(opacityThrottle);
+                        opacityThrottle = setTimeout(() => {
+                            this.render();
+                            opacityThrottle = null;
+                        }, 30);
                     });
                 } else {
                     console.error('Logo opacity slider or value element not found');
                 }
                 
-                // Color picker
+                // Color picker (with throttling for performance)
                 if (this.logoColorPicker && this.logoColorValue) {
+                    let colorThrottle = null;
                     this.logoColorPicker.addEventListener('input', (e) => {
-                        this.logoColorValue.textContent = e.target.value.toUpperCase();
-                        this.logoColor = e.target.value;
+                        const color = e.target.value;
+                        this.logoColorValue.textContent = color.toUpperCase();
+                        this.logoColor = color;
                         if (this.logo) {
-                            this.logo.color = e.target.value;
-                            this.render();
+                            this.logo.color = color;
                         }
+                        
+                        // Throttle render using requestAnimationFrame for smooth 60fps
+                        if (colorThrottle) cancelAnimationFrame(colorThrottle);
+                        colorThrottle = requestAnimationFrame(() => {
+                            this.render();
+                            colorThrottle = null;
+                        });
                     });
                 } else {
                     console.error('Logo color picker or value element not found');
@@ -2842,7 +2864,15 @@
                 
                 this.logo.x = newX;
                 this.logo.y = newY;
-                this.render();
+                
+                // Throttle render during dragging for mobile performance
+                if (!this._dragRenderScheduled) {
+                    this._dragRenderScheduled = true;
+                    requestAnimationFrame(() => {
+                        this.render();
+                        this._dragRenderScheduled = false;
+                    });
+                }
             }
             
             handleMouseUp() {
