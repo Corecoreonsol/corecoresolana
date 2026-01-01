@@ -2107,66 +2107,44 @@
                 this.removeLogoBtn.addEventListener('click', () => this.removeLogo());
                 this.centerLogoBtn.addEventListener('click', () => this.centerLogo());
                 
-                // Sliders - dodaj sprawdzenie czy elementy istnieją
+                // Sliders - with aggressive debouncing for smooth performance
                 if (this.logoSizeSlider && this.logoSizeValue) {
-                    let sizeThrottle = null;
-                    this.logoSizeSlider.addEventListener('input', async (e) => {
+                    this.logoSizeSlider.addEventListener('input', (e) => {
                         this.logoSizeValue.textContent = e.target.value;
                         if (this.logo) {
-                            await this.ensureLogoAspectRatio();
                             const newWidth = parseInt(e.target.value);
                             const newHeight = newWidth / (this.logoAspectRatio || 1);
                             this.logo.width = newWidth;
                             this.logo.height = newHeight;
+                            this.debouncedRender();
                         }
-                        
-                        // Throttle render for smooth performance
-                        if (sizeThrottle) clearTimeout(sizeThrottle);
-                        sizeThrottle = setTimeout(() => {
-                            this.render();
-                            sizeThrottle = null;
-                        }, 30);
                     });
                 } else {
                     console.error('Logo size slider or value element not found');
                 }
                 
                 if (this.logoOpacitySlider && this.logoOpacityValue) {
-                    let opacityThrottle = null;
                     this.logoOpacitySlider.addEventListener('input', (e) => {
                         this.logoOpacityValue.textContent = e.target.value + '%';
                         if (this.logo) {
                             this.logo.opacity = parseInt(e.target.value) / 100;
+                            this.debouncedRender();
                         }
-                        
-                        // Throttle render for smooth performance
-                        if (opacityThrottle) clearTimeout(opacityThrottle);
-                        opacityThrottle = setTimeout(() => {
-                            this.render();
-                            opacityThrottle = null;
-                        }, 30);
                     });
                 } else {
                     console.error('Logo opacity slider or value element not found');
                 }
                 
-                // Color picker (with throttling for performance)
+                // Color picker (with debouncing for performance)
                 if (this.logoColorPicker && this.logoColorValue) {
-                    let colorThrottle = null;
                     this.logoColorPicker.addEventListener('input', (e) => {
                         const color = e.target.value;
                         this.logoColorValue.textContent = color.toUpperCase();
                         this.logoColor = color;
                         if (this.logo) {
                             this.logo.color = color;
+                            this.debouncedRender();
                         }
-                        
-                        // Throttle render using requestAnimationFrame for smooth 60fps
-                        if (colorThrottle) cancelAnimationFrame(colorThrottle);
-                        colorThrottle = requestAnimationFrame(() => {
-                            this.render();
-                            colorThrottle = null;
-                        });
                     });
                 } else {
                     console.error('Logo color picker or value element not found');
@@ -2450,6 +2428,17 @@
                 exportNote.textContent = 'Image will be exported as PNG';
                 
                 this.render();
+            }
+            
+            // Debounced render for smooth slider/picker performance
+            debouncedRender() {
+                if (this._renderTimeout) {
+                    cancelAnimationFrame(this._renderTimeout);
+                }
+                this._renderTimeout = requestAnimationFrame(() => {
+                    this.render();
+                    this._renderTimeout = null;
+                });
             }
             
             render() {
