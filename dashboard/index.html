@@ -2494,17 +2494,26 @@
                         const g = parseInt(hex.substr(2, 2), 16);
                         const b = parseInt(hex.substr(4, 2), 16);
                         
-                        // Create a temporary canvas to apply color
-                        const tempCanvas = document.createElement('canvas');
-                        tempCanvas.width = this.logo.width;
-                        tempCanvas.height = this.logo.height;
-                        const tempCtx = tempCanvas.getContext('2d');
-                        
+                        // Use high-res bitmap for coloring to maintain quality
                         const srcImg = this.logoBitmap || this.logoImage;
-                        tempCtx.drawImage(srcImg, 0, 0, this.logo.width, this.logo.height);
+                        const sourceWidth = srcImg.naturalWidth || srcImg.width;
+                        const sourceHeight = srcImg.naturalHeight || srcImg.height;
+                        
+                        // Create a temporary canvas at SOURCE resolution (high quality)
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = sourceWidth;
+                        tempCanvas.height = sourceHeight;
+                        const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
+                        
+                        // Enable high-quality rendering
+                        tempCtx.imageSmoothingEnabled = true;
+                        tempCtx.imageSmoothingQuality = 'high';
+                        
+                        // Draw source image at full resolution
+                        tempCtx.drawImage(srcImg, 0, 0, sourceWidth, sourceHeight);
                         
                         // Get image data and apply color tint
-                        const imageData = tempCtx.getImageData(0, 0, this.logo.width, this.logo.height);
+                        const imageData = tempCtx.getImageData(0, 0, sourceWidth, sourceHeight);
                         const data = imageData.data;
                         
                         for (let i = 0; i < data.length; i += 4) {
@@ -2520,7 +2529,9 @@
                         }
                         
                         tempCtx.putImageData(imageData, 0, 0);
-                        this.ctx.drawImage(tempCanvas, this.logo.x, this.logo.y);
+                        
+                        // Draw the high-res colored image scaled to display size
+                        this.ctx.drawImage(tempCanvas, this.logo.x, this.logo.y, this.logo.width, this.logo.height);
                     } else {
                         const srcImg = this.logoBitmap || this.logoImage;
                         this.ctx.drawImage(srcImg, this.logo.x, this.logo.y, this.logo.width, this.logo.height);
