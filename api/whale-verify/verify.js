@@ -1,5 +1,5 @@
 const nacl = require('tweetnacl');
-const bs58 = require('bs58');
+const bs58 = require('bs58').default || require('bs58');
 const { Connection, PublicKey } = require('@solana/web3.js');
 const { sql } = require('@vercel/postgres');
 
