@@ -2135,15 +2135,34 @@
                     console.error('Logo opacity slider or value element not found');
                 }
                 
-                // Color picker (with debouncing for performance)
+                // Color picker (with aggressive debouncing due to expensive color processing)
                 if (this.logoColorPicker && this.logoColorValue) {
+                    let lastColorUpdate = 0;
+                    const colorUpdateInterval = 100; // Update max 10 times per second
+                    
                     this.logoColorPicker.addEventListener('input', (e) => {
                         const color = e.target.value;
                         this.logoColorValue.textContent = color.toUpperCase();
-                        this.logoColor = color;
+                        
                         if (this.logo) {
                             this.logo.color = color;
-                            this.debouncedRender();
+                            
+                            // Throttle expensive color processing
+                            const now = Date.now();
+                            if (now - lastColorUpdate >= colorUpdateInterval) {
+                                lastColorUpdate = now;
+                                // Invalidate cache to force reprocessing
+                                this.coloredLogoBitmap = null;
+                                this.debouncedRender();
+                            } else {
+                                // Still update but defer processing
+                                if (this._colorTimeout) clearTimeout(this._colorTimeout);
+                                this._colorTimeout = setTimeout(() => {
+                                    this.coloredLogoBitmap = null;
+                                    lastColorUpdate = Date.now();
+                                    this.render();
+                                }, colorUpdateInterval);
+                            }
                         }
                     });
                 } else {
