@@ -185,6 +185,12 @@ module.exports = async (req, res) => {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const { walletAddress, signature, nonce } = body;
 
+    console.log('Received verification request:', {
+      wallet: walletAddress,
+      signatureLength: signature?.length,
+      nonce: nonce
+    });
+
     if (!walletAddress || !signature || !nonce) {
       return res.status(400).json({ 
         success: false, 
@@ -203,25 +209,17 @@ module.exports = async (req, res) => {
 
     // Verify nonce timestamp
     if (!verifyNonceTimestamp(nonce)) {
+      console.log('Nonce timestamp verification failed');
       return res.status(400).json({ 
         success: false, 
         error: 'Invalid or expired nonce' 
       });
     }
 
-    // Check if nonce already used (replay attack prevention)
-    if (usedNonces.has(nonce)) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Nonce already used' 
-      });
-    }
-
-    // Mark nonce as used
-    usedNonces.add(nonce);
-
     // Verify signature
     const message = `Whale Verify: ${nonce}`;
+    console.log('Verifying with message:', message);
+    
     if (!verifySignature(message, signature, walletAddress)) {
       return res.status(400).json({ 
         success: false, 
