@@ -365,6 +365,28 @@
             margin-top: 20px;
             font-size: 0.9em;
         }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -484,6 +506,53 @@
             document.getElementById('mainContent').style.display = 'block';
         }
 
+        // Copy to clipboard function
+        async function copyToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                showSuccess('Skopiowano adres wallet do schowka!');
+            } catch (err) {
+                console.error('Failed to copy:', err);
+                // Fallback method
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showSuccess('Skopiowano adres wallet do schowka!');
+                } catch (err) {
+                    showError('Nie udało się skopiować');
+                }
+                document.body.removeChild(textArea);
+            }
+        }
+
+        function showSuccess(message) {
+            const div = document.createElement('div');
+            div.textContent = message;
+            div.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #00ff88, #00cc6e);
+                color: #1a1a2e;
+                padding: 15px 25px;
+                border-radius: 10px;
+                font-weight: 600;
+                box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4);
+                z-index: 10001;
+                animation: slideIn 0.3s ease;
+            `;
+            document.body.appendChild(div);
+            setTimeout(() => {
+                div.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => document.body.removeChild(div), 300);
+            }, 2000);
+        }
+
         // Allow Enter key for login
         document.getElementById('passwordInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -531,7 +600,7 @@
             tbody.innerHTML = members.map(member => `
                 <tr>
                     <td>
-                        <div class="wallet-address" title="${member.wallet}">
+                        <div class="wallet-address" title="${member.wallet} (Kliknij aby skopiować)" onclick="copyToClipboard('${member.wallet}')" style="cursor: pointer;">
                             ${member.wallet.substring(0, 8)}...${member.wallet.substring(member.wallet.length - 8)}
                         </div>
                     </td>
