@@ -1,20 +1,31 @@
 const crypto = require('crypto');
-const { sql } = require('@vercel/postgres');
 
-const NONCE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+// Nonce with embedded timestamp (no database needed)
+// Format: timestamp.randomhex
+function generateNonce() {
+  const timestamp = Date.now();
+  const random = crypto.randomBytes(32).toString('hex');
+  return `${timestamp}.${random}`;
+}
 
-// Database initialization
-async function initDatabase() {
+function verifyNonceTimestamp(nonce) {
   try {
-    await sql`
-      CREATE TABLE IF NOT EXISTS nonces (
-        nonce TEXT PRIMARY KEY,
-        created_at TIMESTAMP DEFAULT NOW()
-      )
-    `;
-    await sql`CREATE INDEX IF NOT EXISTS idx_nonce_created ON nonces(created_at)`;
+    const parts = nonce.split('.');
+    if (parts.length !== 2) {
+      return false;
+    }
+    
+    const timestamp = parseInt(parts[0]);
+    if (isNaN(timestamp)) {
+      return false;
+    }
+    
+    const age = Date.now() - timestamp;
+    const NONCE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+    
+    return age >= 0 && age < NONCE_EXPIRY;
   } catch (error) {
-    console.error('Database initialization error:', error);
+    return false;
   }
 }
 
@@ -34,16 +45,7 @@ module.exports = async (req, res) => {
   }
 
   try {
-    await initDatabase();
-    
-    const nonce = crypto.randomBytes(32).toString('hex');
-    
-    // Save nonce to database
-    await sql`INSERT INTO nonces (nonce) VALUES (${nonce})`;
-    
-    // Clean up old nonces (older than 5 minutes)
-    await sql`DELETE FROM nonces WHERE created_at < NOW() - INTERVAL '5 minutes'`;
-
+    const nonce = generateNonce();
     return res.status(200).json({ success: true, nonce });
   } catch (error) {
     console.error('Nonce generation error:', error);
@@ -54,3 +56,6 @@ module.exports = async (req, res) => {
     });
   }
 };
+
+// Export for verify endpoint
+module.exports.verifyNonceTimestamp = verifyNonceTimestamp;

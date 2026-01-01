@@ -35,14 +35,8 @@ async function initDatabase() {
       )
     `;
     
-    await sql`CREATE TABLE IF NOT EXISTS nonces (
-        nonce TEXT PRIMARY KEY,
-        created_at TIMESTAMP DEFAULT NOW()
-      )`;
-    
     await sql`CREATE INDEX IF NOT EXISTS idx_wallet ON verifications(wallet_address)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_telegram_user ON verifications(telegram_user_id)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_nonce_created ON nonces(created_at)`;
   } catch (error) {
     console.error('Database initialization error:', error);
   }
@@ -120,32 +114,30 @@ async function hasWalletBeenVerified(walletAddress) {
   }
 }
 
-// Verify nonce from database
-async function verifyNonce(nonce) {
+// Verify nonce timestamp (no database needed)
+function verifyNonceTimestamp(nonce) {
   try {
-    const result = await sql`
-      SELECT created_at FROM nonces WHERE nonce = ${nonce}
-    `;
-    
-    if (result.rows.length === 0) {
+    const parts = nonce.split('.');
+    if (parts.length !== 2) {
       return false;
     }
     
-    const createdAt = new Date(result.rows[0].created_at);
-    const isExpired = Date.now() - createdAt.getTime() > NONCE_EXPIRY;
+    const timestamp = parseInt(parts[0]);
+    if (isNaN(timestamp)) {
+      return false;
+    }
     
-    // Delete nonce after checking
-    await sql`DELETE FROM nonces WHERE nonce = ${nonce}`;
+    const age = Date.now() - timestamp;
+    const NONCE_EXPIRY = 5 * 60 * 1000; // 5 minutes
     
-    // Clean up old nonces
-    await sql`DELETE FROM nonces WHERE created_at < NOW() - INTERVAL '5 minutes'`;
-    
-    return !isExpired;
+    return age >= 0 && age < NONCE_EXPIRY;
   } catch (error) {
-    console.error('Nonce verification error:', error);
     return false;
   }
 }
+
+// In-memory used nonces tracking (prevents replay attacks within function lifetime)
+const usedNonces = new Set();
 
 // Save verification to database
 async function saveVerification(walletAddress, inviteLink, ipAddress, userAgent) {
@@ -199,14 +191,24 @@ module.exports = async (req, res) => {
       });
     }
 
-    // Verify nonce from database
-    const nonceValid = await verifyNonce(nonce);
-    if (!nonceValid) {
+    // Verify nonce timestamp
+    if (!verifyNonceTimestamp(nonce)) {
       return res.status(400).json({ 
         success: false, 
         error: 'Invalid or expired nonce' 
       });
     }
+
+    // Check if nonce already used (replay attack prevention)
+    if (usedNonces.has(nonce)) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Nonce already used' 
+      });
+    }
+
+    // Mark nonce as used
+    usedNonces.add(nonce);
 
     // Verify signature
     const message = `Whale Verify: ${nonce}`;
