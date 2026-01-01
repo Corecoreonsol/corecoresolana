@@ -25,14 +25,30 @@ module.exports = async (req, res) => {
         telegram_first_name,
         created_at,
         joined_at,
-        used
+        used,
+        expires_at
       FROM verifications
       ORDER BY created_at DESC
     `;
 
+    // Add status field based on joined_at and used
+    const members = result.rows.map(row => {
+      let status = 'pending';
+      if (row.joined_at) {
+        status = 'joined';
+      } else if (row.used) {
+        status = 'link_used';
+      }
+      
+      return {
+        ...row,
+        status
+      };
+    });
+
     return res.status(200).json({ 
       success: true, 
-      members: result.rows
+      members
     });
 
   } catch (error) {
