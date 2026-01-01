@@ -2135,34 +2135,14 @@
                     console.error('Logo opacity slider or value element not found');
                 }
                 
-                // Color picker (with aggressive debouncing due to expensive color processing)
+                // Color picker (now fast with composite operations)
                 if (this.logoColorPicker && this.logoColorValue) {
-                    let lastColorUpdate = 0;
-                    const colorUpdateInterval = 100; // Update max 10 times per second
-                    
                     this.logoColorPicker.addEventListener('input', (e) => {
                         const color = e.target.value;
                         this.logoColorValue.textContent = color.toUpperCase();
-                        
                         if (this.logo) {
                             this.logo.color = color;
-                            
-                            // Throttle expensive color processing
-                            const now = Date.now();
-                            if (now - lastColorUpdate >= colorUpdateInterval) {
-                                lastColorUpdate = now;
-                                // Invalidate cache to force reprocessing
-                                this.coloredLogoBitmap = null;
-                                this.debouncedRender();
-                            } else {
-                                // Still update but defer processing
-                                if (this._colorTimeout) clearTimeout(this._colorTimeout);
-                                this._colorTimeout = setTimeout(() => {
-                                    this.coloredLogoBitmap = null;
-                                    lastColorUpdate = Date.now();
-                                    this.render();
-                                }, colorUpdateInterval);
-                            }
+                            this.debouncedRender();
                         }
                     });
                 } else {
@@ -2518,61 +2498,25 @@
                     this.ctx.imageSmoothingEnabled = true;
                     this.ctx.imageSmoothingQuality = 'high';
                     
-                    // Apply color tint if color is set
+                    const srcImg = this.logoBitmap || this.logoImage;
+                    
+                    // Apply color tint using fast composite operations instead of pixel manipulation
                     if (this.logo.color && this.logo.color !== '#00FFFF') {
-                        // Check if we need to regenerate colored bitmap
-                        if (!this.coloredLogoBitmap || this.lastLogoColor !== this.logo.color) {
-                            // Convert hex color to RGB
-                            const hex = this.logo.color.replace('#', '');
-                            const r = parseInt(hex.substr(0, 2), 16);
-                            const g = parseInt(hex.substr(2, 2), 16);
-                            const b = parseInt(hex.substr(4, 2), 16);
-                            
-                            // Use high-res bitmap for coloring to maintain quality
-                            const srcImg = this.logoBitmap || this.logoImage;
-                            const sourceWidth = srcImg.naturalWidth || srcImg.width;
-                            const sourceHeight = srcImg.naturalHeight || srcImg.height;
-                            
-                            // Create a temporary canvas at SOURCE resolution (high quality)
-                            const tempCanvas = document.createElement('canvas');
-                            tempCanvas.width = sourceWidth;
-                            tempCanvas.height = sourceHeight;
-                            const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
-                            
-                            // Enable high-quality rendering
-                            tempCtx.imageSmoothingEnabled = true;
-                            tempCtx.imageSmoothingQuality = 'high';
-                            
-                            // Draw source image at full resolution
-                            tempCtx.drawImage(srcImg, 0, 0, sourceWidth, sourceHeight);
-                            
-                            // Get image data and apply color tint
-                            const imageData = tempCtx.getImageData(0, 0, sourceWidth, sourceHeight);
-                            const data = imageData.data;
-                            
-                            for (let i = 0; i < data.length; i += 4) {
-                                // Only tint non-transparent pixels
-                                if (data[i + 3] > 0) {
-                                    // Calculate brightness of original pixel
-                                    const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3 / 255;
-                                    // Apply new color while maintaining brightness
-                                    data[i] = r * brightness;
-                                    data[i + 1] = g * brightness;
-                                    data[i + 2] = b * brightness;
-                                }
-                            }
-                            
-                            tempCtx.putImageData(imageData, 0, 0);
-                            
-                            // Cache the colored bitmap
-                            this.coloredLogoBitmap = tempCanvas;
-                            this.lastLogoColor = this.logo.color;
-                        }
+                        // Draw logo first
+                        this.ctx.drawImage(srcImg, this.logo.x, this.logo.y, this.logo.width, this.logo.height);
                         
-                        // Draw the cached colored bitmap scaled to display size
-                        this.ctx.drawImage(this.coloredLogoBitmap, this.logo.x, this.logo.y, this.logo.width, this.logo.height);
+                        // Apply color overlay using blend mode (MUCH faster than pixel processing)
+                        this.ctx.globalCompositeOperation = 'multiply';
+                        this.ctx.fillStyle = this.logo.color;
+                        this.ctx.fillRect(this.logo.x, this.logo.y, this.logo.width, this.logo.height);
+                        
+                        // Restore alpha channel
+                        this.ctx.globalCompositeOperation = 'destination-in';
+                        this.ctx.drawImage(srcImg, this.logo.x, this.logo.y, this.logo.width, this.logo.height);
+                        
+                        this.ctx.globalCompositeOperation = 'source-over';
                     } else {
-                        const srcImg = this.logoBitmap || this.logoImage;
+                        // No color, just draw normally
                         this.ctx.drawImage(srcImg, this.logo.x, this.logo.y, this.logo.width, this.logo.height);
                     }
                     
