@@ -1873,6 +1873,8 @@
                 this.logoAspectRatio = null; // width / height
                 this.logoAspectRatioPixels = null; // derived from visible content bbox
                 this.logoBitmap = null; // rasterized PNG version of the logo for iOS/mobile stability
+                this.coloredLogoBitmap = null; // cached colored version to avoid re-processing
+                this.lastLogoColor = null; // track color changes
                 
                 this.isDragging = false;
                 this.dragOffset = { x: 0, y: 0 };
@@ -2488,50 +2490,57 @@
                     
                     // Apply color tint if color is set
                     if (this.logo.color && this.logo.color !== '#00FFFF') {
-                        // Convert hex color to RGB
-                        const hex = this.logo.color.replace('#', '');
-                        const r = parseInt(hex.substr(0, 2), 16);
-                        const g = parseInt(hex.substr(2, 2), 16);
-                        const b = parseInt(hex.substr(4, 2), 16);
-                        
-                        // Use high-res bitmap for coloring to maintain quality
-                        const srcImg = this.logoBitmap || this.logoImage;
-                        const sourceWidth = srcImg.naturalWidth || srcImg.width;
-                        const sourceHeight = srcImg.naturalHeight || srcImg.height;
-                        
-                        // Create a temporary canvas at SOURCE resolution (high quality)
-                        const tempCanvas = document.createElement('canvas');
-                        tempCanvas.width = sourceWidth;
-                        tempCanvas.height = sourceHeight;
-                        const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
-                        
-                        // Enable high-quality rendering
-                        tempCtx.imageSmoothingEnabled = true;
-                        tempCtx.imageSmoothingQuality = 'high';
-                        
-                        // Draw source image at full resolution
-                        tempCtx.drawImage(srcImg, 0, 0, sourceWidth, sourceHeight);
-                        
-                        // Get image data and apply color tint
-                        const imageData = tempCtx.getImageData(0, 0, sourceWidth, sourceHeight);
-                        const data = imageData.data;
-                        
-                        for (let i = 0; i < data.length; i += 4) {
-                            // Only tint non-transparent pixels
-                            if (data[i + 3] > 0) {
-                                // Calculate brightness of original pixel
-                                const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3 / 255;
-                                // Apply new color while maintaining brightness
-                                data[i] = r * brightness;
-                                data[i + 1] = g * brightness;
-                                data[i + 2] = b * brightness;
+                        // Check if we need to regenerate colored bitmap
+                        if (!this.coloredLogoBitmap || this.lastLogoColor !== this.logo.color) {
+                            // Convert hex color to RGB
+                            const hex = this.logo.color.replace('#', '');
+                            const r = parseInt(hex.substr(0, 2), 16);
+                            const g = parseInt(hex.substr(2, 2), 16);
+                            const b = parseInt(hex.substr(4, 2), 16);
+                            
+                            // Use high-res bitmap for coloring to maintain quality
+                            const srcImg = this.logoBitmap || this.logoImage;
+                            const sourceWidth = srcImg.naturalWidth || srcImg.width;
+                            const sourceHeight = srcImg.naturalHeight || srcImg.height;
+                            
+                            // Create a temporary canvas at SOURCE resolution (high quality)
+                            const tempCanvas = document.createElement('canvas');
+                            tempCanvas.width = sourceWidth;
+                            tempCanvas.height = sourceHeight;
+                            const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
+                            
+                            // Enable high-quality rendering
+                            tempCtx.imageSmoothingEnabled = true;
+                            tempCtx.imageSmoothingQuality = 'high';
+                            
+                            // Draw source image at full resolution
+                            tempCtx.drawImage(srcImg, 0, 0, sourceWidth, sourceHeight);
+                            
+                            // Get image data and apply color tint
+                            const imageData = tempCtx.getImageData(0, 0, sourceWidth, sourceHeight);
+                            const data = imageData.data;
+                            
+                            for (let i = 0; i < data.length; i += 4) {
+                                // Only tint non-transparent pixels
+                                if (data[i + 3] > 0) {
+                                    // Calculate brightness of original pixel
+                                    const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3 / 255;
+                                    // Apply new color while maintaining brightness
+                                    data[i] = r * brightness;
+                                    data[i + 1] = g * brightness;
+                                    data[i + 2] = b * brightness;
+                                }
                             }
+                            
+                            tempCtx.putImageData(imageData, 0, 0);
+                            
+                            // Cache the colored bitmap
+                            this.coloredLogoBitmap = tempCanvas;
+                            this.lastLogoColor = this.logo.color;
                         }
                         
-                        tempCtx.putImageData(imageData, 0, 0);
-                        
-                        // Draw the high-res colored image scaled to display size
-                        this.ctx.drawImage(tempCanvas, this.logo.x, this.logo.y, this.logo.width, this.logo.height);
+                        // Draw the cached colored bitmap scaled to display size
+                        this.ctx.drawImage(this.coloredLogoBitmap, this.logo.x, this.logo.y, this.logo.width, this.logo.height);
                     } else {
                         const srcImg = this.logoBitmap || this.logoImage;
                         this.ctx.drawImage(srcImg, this.logo.x, this.logo.y, this.logo.width, this.logo.height);
@@ -2953,7 +2962,55 @@
                             ctx.globalAlpha = this.logo.opacity || 1;
                             ctx.imageSmoothingEnabled = true;
                             ctx.imageSmoothingQuality = 'high';
-                            ctx.drawImage(logoSrc, logoX, logoY, logoW, logoH);
+                            
+                            // Apply color tint if color is set (same logic as render())
+                            if (this.logo.color && this.logo.color !== '#00FFFF') {
+                                console.log('Export: Applying color:', this.logo.color);
+                                
+                                // Use cached colored bitmap if available and color hasn't changed
+                                if (this.coloredLogoBitmap && this.lastLogoColor === this.logo.color) {
+                                    console.log('Export: Using cached colored bitmap');
+                                    ctx.drawImage(this.coloredLogoBitmap, logoX, logoY, logoW, logoH);
+                                } else {
+                                    // Generate colored version
+                                    const hex = this.logo.color.replace('#', '');
+                                    const r = parseInt(hex.substr(0, 2), 16);
+                                    const g = parseInt(hex.substr(2, 2), 16);
+                                    const b = parseInt(hex.substr(4, 2), 16);
+                                    
+                                    // Use high-res source for coloring
+                                    const sourceWidth = logoSrc.naturalWidth || logoSrc.width;
+                                    const sourceHeight = logoSrc.naturalHeight || logoSrc.height;
+                                    
+                                    // Create temp canvas at source resolution
+                                    const tempCanvas = document.createElement('canvas');
+                                    tempCanvas.width = sourceWidth;
+                                    tempCanvas.height = sourceHeight;
+                                    const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
+                                    tempCtx.imageSmoothingEnabled = true;
+                                    tempCtx.imageSmoothingQuality = 'high';
+                                    
+                                    // Draw and color at full resolution
+                                    tempCtx.drawImage(logoSrc, 0, 0, sourceWidth, sourceHeight);
+                                    const imageData = tempCtx.getImageData(0, 0, sourceWidth, sourceHeight);
+                                    const data = imageData.data;
+                                    
+                                    for (let i = 0; i < data.length; i += 4) {
+                                        if (data[i + 3] > 0) {
+                                            const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3 / 255;
+                                            data[i] = r * brightness;
+                                            data[i + 1] = g * brightness;
+                                            data[i + 2] = b * brightness;
+                                        }
+                                    }
+                                    
+                                    tempCtx.putImageData(imageData, 0, 0);
+                                    ctx.drawImage(tempCanvas, logoX, logoY, logoW, logoH);
+                                }
+                            } else {
+                                ctx.drawImage(logoSrc, logoX, logoY, logoW, logoH);
+                            }
+                            
                             ctx.restore();
                             
                             // Test again after drawing logo
