@@ -41,8 +41,15 @@ module.exports = async (req, res) => {
       }
       
       return {
-        ...row,
-        status
+        wallet: row.wallet_address,
+        telegram: {
+          username: row.telegram_username,
+          first_name: row.telegram_first_name,
+          user_id: row.telegram_user_id
+        },
+        status,
+        created_at: row.created_at,
+        joined_at: row.joined_at
       };
     });
 
