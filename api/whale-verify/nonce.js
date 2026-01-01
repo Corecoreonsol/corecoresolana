@@ -46,7 +46,8 @@ module.exports = async (req, res) => {
 
   try {
     const nonce = generateNonce();
-    return res.status(200).json({ success: true, nonce });
+    const message = `Whale Verify: ${nonce}`;
+    return res.status(200).json({ success: true, nonce, message });
   } catch (error) {
     console.error('Nonce generation error:', error);
     return res.status(500).json({ 
