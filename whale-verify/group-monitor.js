@@ -1,6 +1,5 @@
 // Monitor new group members and link them with wallets
-const db = require('./db');
-const telegram = require('./telegram');
+const { sql } = require('@vercel/postgres');
 
 let isMonitoring = false;
 let lastUpdateId = 0;
@@ -103,24 +102,19 @@ async function checkNewMembers() {
 async function linkMemberToWallet(user) {
     try {
         // Get all pending verifications from last 15 minutes
-        const fifteenMinutesAgo = Date.now() - (15 * 60 * 1000);
+        const fifteenMinutesAgo = new Date(Date.now() - (15 * 60 * 1000));
         
-        // Access database directly (db module exports db object)
-        const Database = require('better-sqlite3');
-        const path = require('path');
-        const dbPath = path.join(__dirname, 'whale-verify.db');
-        const database = new Database(dbPath);
-        
-        const pendingVerifications = database.prepare(`
+        const result = await sql`
             SELECT * FROM verifications 
             WHERE telegram_user_id IS NULL 
-            AND created_at > ?
+            AND created_at > ${fifteenMinutesAgo}
             ORDER BY created_at DESC
-        `).all(fifteenMinutesAgo);
+        `;
+        
+        const pendingVerifications = result.rows;
         
         if (pendingVerifications.length === 0) {
             console.log('   ℹ️  No pending verifications found');
-            database.close();
             return;
         }
         
@@ -128,23 +122,21 @@ async function linkMemberToWallet(user) {
         if (pendingVerifications.length === 1) {
             const verification = pendingVerifications[0];
             
-            const result = db.updateTelegramInfo(
-                verification.wallet_address,
-                user.id.toString(),
-                user.username,
-                user.first_name
-            );
+            await sql`
+                UPDATE verifications 
+                SET telegram_user_id = ${user.id.toString()},
+                    telegram_username = ${user.username || ''},
+                    telegram_first_name = ${user.first_name || ''},
+                    joined_at = NOW()
+                WHERE wallet_address = ${verification.wallet_address}
+            `;
             
-            if (result.success) {
-                console.log(`   ✅ Linked @${user.username || user.first_name} → ${verification.wallet_address.substring(0, 8)}...`);
-                console.log(`   💾 Telegram info saved to database`);
-            }
+            console.log(`   ✅ Linked @${user.username || user.first_name} → ${verification.wallet_address.substring(0, 8)}...`);
+            console.log(`   💾 Telegram info saved to database`);
         } else {
             console.log(`   ⚠️  Multiple pending verifications (${pendingVerifications.length}), cannot auto-link`);
-            console.log(`   💡 Use manual linking: POST /api/whale-verify/link-telegram`);
+            console.log(`   💡 User should re-verify after 15 minutes`);
         }
-        
-        database.close();
     } catch (error) {
         console.error('   ❌ Failed to link member:', error.message);
     }
