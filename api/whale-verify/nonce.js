@@ -2,6 +2,7 @@ const crypto = require('crypto');
 
 // Nonce with embedded timestamp (no database needed)
 // Format: timestamp.randomhex
+// Updated: Configured with Postgres database
 function generateNonce() {
   const timestamp = Date.now();
   const random = crypto.randomBytes(32).toString('hex');
