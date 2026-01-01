@@ -40,6 +40,11 @@
         verifyBtn.disabled = disabled;
     }
 
+    // Check if mobile device
+    function isMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
     // Detect available Solana wallets
     function detectWallet() {
         if (window.phantom?.solana?.isPhantom) {
@@ -54,11 +59,27 @@
         return null;
     }
 
+    // Open in Phantom mobile browser
+    function openInPhantom() {
+        const currentUrl = window.location.href;
+        const phantomUrl = `https://phantom.app/ul/browse/${encodeURIComponent(currentUrl)}`;
+        window.location.href = phantomUrl;
+    }
+
     // Connect to Solana wallet
     async function connectWallet() {
         console.log('Attempting to connect wallet...');
         
         const wallet = detectWallet();
+        
+        // If mobile and no wallet detected, redirect to Phantom
+        if (!wallet && isMobile()) {
+            setStatus('Opening in Phantom wallet...');
+            setTimeout(() => {
+                openInPhantom();
+            }, 1000);
+            throw new Error('Redirecting to Phantom mobile browser...');
+        }
         
         if (!wallet) {
             throw new Error('No Solana wallet found. Please install Phantom or Solflare.');
