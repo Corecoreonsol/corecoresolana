@@ -10,6 +10,24 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
+// Whale verification module
+let whaleVerifyRoutes = null;
+let groupMonitor = null;
+try {
+    whaleVerifyRoutes = require("./whale-verify/routes");
+    groupMonitor = require("./whale-verify/group-monitor");
+    console.log("✅ Whale verification module loaded");
+    
+    // Start monitoring group members after 5 seconds
+    setTimeout(() => {
+        if (groupMonitor && process.env.TELEGRAM_BOT_TOKEN) {
+            groupMonitor.startMonitoring();
+        }
+    }, 5000);
+} catch (error) {
+    console.error("❌ Failed to load whale verification module:", error.message);
+}
+
 const app = express();
 
 // Performance optimizations
@@ -413,6 +431,14 @@ app.use(express.static('.', {
   etag: true
 }));
 
+// Whale verification API routes
+if (whaleVerifyRoutes) {
+    app.use('/api/whale-verify', whaleVerifyRoutes);
+    console.log("✅ Whale verification routes registered at /api/whale-verify");
+} else {
+    console.error("❌ Whale verification routes NOT registered");
+}
+
 // Serve main HTML with no-cache for updates
 app.get('/', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
@@ -422,6 +448,11 @@ app.get('/', (req, res) => {
 // Backward compatible redirect for old dashboard URL
 app.get('/dashboard.html', (req, res) => {
   res.redirect(302, '/dashboard/index.html');
+});
+
+// Whale members admin panel
+app.get('/whale-members.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'whale-members.html'));
 });
 
 const PORT = Number(process.env.PORT || 3000);

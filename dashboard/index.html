@@ -10,7 +10,7 @@
     <link rel="icon" type="image/jpeg" href="/images/favicon.jpg">
     
     <!-- Preload Critical Assets -->
-    <link rel="preload" href="/dashboard/corelogo.svg" as="image" type="image/svg+xml">
+    <link rel="preload" href="/dashboard/newcorelogo.svg" as="image" type="image/svg+xml">
     
     <style>
         /* ===== CORE COLOR PALETTE - EXACT FROM MAIN SITE ===== */
@@ -726,6 +726,49 @@
             cursor: pointer !important;
             border: none;
             box-shadow: 0 0 8px var(--core-glow-blue);
+        }
+
+        /* Logo Color Picker */
+        .logo-color-picker {
+            width: 100%;
+            height: 32px;
+            cursor: pointer !important;
+            border: 1px solid rgba(0, 153, 255, 0.3);
+            background: rgba(0, 4, 8, 0.5);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            padding: 0;
+            margin: 0.2rem 0;
+        }
+
+        .logo-color-picker::-webkit-color-swatch-wrapper {
+            padding: 0;
+            border: none;
+        }
+
+        .logo-color-picker::-webkit-color-swatch {
+            border: 1px solid rgba(0, 153, 255, 0.5);
+            border-radius: 1px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo-color-picker::-moz-color-swatch {
+            border: 1px solid rgba(0, 153, 255, 0.5);
+            border-radius: 1px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo-color-picker:hover {
+            border-color: rgba(0, 153, 255, 0.6);
+            box-shadow: 0 0 8px var(--core-glow-blue);
+        }
+
+        .logo-color-picker:focus {
+            border-color: var(--core-text-blue);
+            box-shadow: 0 0 12px var(--core-glow-blue);
         }
 
         .editor-file-input {
@@ -1453,7 +1496,7 @@
         <!-- Dashboard Header -->
         <header class="dashboard-header">
             <a href="/" class="dashboard-logo">
-                <img src="/dashboard/corelogo.svg" alt="CORE">
+                <img src="/dashboard/newcorelogo.svg" alt="CORE">
                 <h1>CREATIVE DASHBOARD</h1>
             </a>
             <a href="/" class="back-btn">← BACK TO HOME</a>
@@ -1525,6 +1568,14 @@
                             <span id="logoOpacityValue">100%</span>
                         </div>
                         <input type="range" id="logoOpacity" min="0" max="100" value="100">
+                    </div>
+                    
+                    <div class="control-slider" id="logoColorControl" style="display: none;">
+                        <div class="slider-label">
+                            <span>Logo Color</span>
+                            <span id="logoColorValue">#00FFFF</span>
+                        </div>
+                        <input type="color" id="logoColor" value="#00FFFF" class="logo-color-picker">
                     </div>
                 </div>
                 
@@ -1797,10 +1848,13 @@
                 this.exportControls = document.getElementById('exportControls');
                 this.logoSizeControl = document.getElementById('logoSizeControl');
                 this.logoOpacityControl = document.getElementById('logoOpacityControl');
+                this.logoColorControl = document.getElementById('logoColorControl');
                 this.logoSizeSlider = document.getElementById('logoSize');
                 this.logoSizeValue = document.getElementById('logoSizeValue');
                 this.logoOpacitySlider = document.getElementById('logoOpacity');
                 this.logoOpacityValue = document.getElementById('logoOpacityValue');
+                this.logoColorPicker = document.getElementById('logoColor');
+                this.logoColorValue = document.getElementById('logoColorValue');
                 
                 // Core Style Controls
                 this.coreStyleControls = document.getElementById('coreStyleControls');
@@ -1812,6 +1866,8 @@
                 this.logo = null;
                 this.logoImage = null;
                 this.logoImageLoaded = false;
+                this.logoColor = '#00FFFF'; // Default cyan color
+                this.logoSubject = null; // Selected subject core
                 this.selectedCoreStyle = null;
                 // Robust aspect ratio cache for logo (handles SVG reliably)
                 this.logoAspectRatio = null; // width / height
@@ -1942,7 +1998,7 @@
                 try {
                     if (!this.logoImage || !this.logoImage.complete) return;
                     await this.ensureLogoAspectRatio();
-                    const targetW = 1024;
+                    const targetW = 4096;
                     const targetH = Math.max(1, Math.round(targetW / (this.logoAspectRatio || 1)));
                     const off = document.createElement('canvas');
                     off.width = targetW;
@@ -1960,7 +2016,7 @@
                         // If tainted (e.g., SVG loaded in a way that taints canvas), try sanitizing by reloading SVG as a data URL
                         console.warn('Logo rasterization tainted; attempting SVG sanitize reload:', taintErr.message);
                         try {
-                            const src = this.logoImage.src || '/dashboard/corelogo.svg';
+                            const src = this.logoImage.src || '/dashboard/newcorelogo.svg';
                             let svgText = null;
                             // Prefer to fetch the original SVG text (same-origin)
                             try {
@@ -1972,7 +2028,7 @@
                             // If fetch failed and the src looks like a relative corelogo path, try that directly
                             if (!svgText && !/^data:/i.test(src)) {
                                 try {
-                                    const resp2 = await fetch('/dashboard/corelogo.svg');
+                                    const resp2 = await fetch('/dashboard/newcorelogo.svg');
                                     if (resp2.ok) svgText = await resp2.text();
                                 } catch (_) { /* ignore */ }
                             }
@@ -2077,6 +2133,37 @@
                 } else {
                     console.error('Logo opacity slider or value element not found');
                 }
+                
+                // Color picker
+                if (this.logoColorPicker && this.logoColorValue) {
+                    this.logoColorPicker.addEventListener('input', (e) => {
+                        this.logoColorValue.textContent = e.target.value.toUpperCase();
+                        this.logoColor = e.target.value;
+                        if (this.logo) {
+                            this.logo.color = e.target.value;
+                            this.render();
+                        }
+                    });
+                } else {
+                    console.error('Logo color picker or value element not found');
+                }
+                
+                // Subject Core buttons
+                const subjectBtns = document.querySelectorAll('.subject-btn');
+                subjectBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        // Toggle selection
+                        if (btn.classList.contains('selected')) {
+                            btn.classList.remove('selected');
+                            this.logoSubject = null;
+                        } else {
+                            subjectBtns.forEach(b => b.classList.remove('selected'));
+                            btn.classList.add('selected');
+                            this.logoSubject = btn.dataset.subject;
+                        }
+                        this.render();
+                    });
+                });
                 
                 // Export
                 this.exportBtn.addEventListener('click', () => this.exportCanvas());
@@ -2398,8 +2485,73 @@
                     this.ctx.globalAlpha = this.logo.opacity;
                     this.ctx.imageSmoothingEnabled = true;
                     this.ctx.imageSmoothingQuality = 'high';
-                    const srcImg = this.logoBitmap || this.logoImage;
-                    this.ctx.drawImage(srcImg, this.logo.x, this.logo.y, this.logo.width, this.logo.height);
+                    
+                    // Apply color tint if color is set
+                    if (this.logo.color && this.logo.color !== '#00FFFF') {
+                        // Convert hex color to RGB
+                        const hex = this.logo.color.replace('#', '');
+                        const r = parseInt(hex.substr(0, 2), 16);
+                        const g = parseInt(hex.substr(2, 2), 16);
+                        const b = parseInt(hex.substr(4, 2), 16);
+                        
+                        // Create a temporary canvas to apply color
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = this.logo.width;
+                        tempCanvas.height = this.logo.height;
+                        const tempCtx = tempCanvas.getContext('2d');
+                        
+                        const srcImg = this.logoBitmap || this.logoImage;
+                        tempCtx.drawImage(srcImg, 0, 0, this.logo.width, this.logo.height);
+                        
+                        // Get image data and apply color tint
+                        const imageData = tempCtx.getImageData(0, 0, this.logo.width, this.logo.height);
+                        const data = imageData.data;
+                        
+                        for (let i = 0; i < data.length; i += 4) {
+                            // Only tint non-transparent pixels
+                            if (data[i + 3] > 0) {
+                                // Calculate brightness of original pixel
+                                const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3 / 255;
+                                // Apply new color while maintaining brightness
+                                data[i] = r * brightness;
+                                data[i + 1] = g * brightness;
+                                data[i + 2] = b * brightness;
+                            }
+                        }
+                        
+                        tempCtx.putImageData(imageData, 0, 0);
+                        this.ctx.drawImage(tempCanvas, this.logo.x, this.logo.y);
+                    } else {
+                        const srcImg = this.logoBitmap || this.logoImage;
+                        this.ctx.drawImage(srcImg, this.logo.x, this.logo.y, this.logo.width, this.logo.height);
+                    }
+                    
+                    // Draw subject text above logo if selected
+                    if (this.logoSubject) {
+                        this.ctx.save();
+                        this.ctx.globalAlpha = this.logo.opacity;
+                        
+                        // Calculate font size based on logo width
+                        const fontSize = Math.max(this.logo.width * 0.15, 20);
+                        this.ctx.font = `bold ${fontSize}px "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif`;
+                        this.ctx.textAlign = 'center';
+                        this.ctx.textBaseline = 'bottom';
+                        
+                        // Position text above logo with some padding
+                        const textX = this.logo.x + this.logo.width / 2;
+                        const textY = this.logo.y - (fontSize * 0.3);
+                        
+                        // Draw text with stroke for better visibility
+                        this.ctx.strokeStyle = '#000000';
+                        this.ctx.lineWidth = fontSize * 0.15;
+                        this.ctx.strokeText(this.logoSubject, textX, textY);
+                        
+                        this.ctx.fillStyle = '#7FD957';
+                        this.ctx.fillText(this.logoSubject, textX, textY);
+                        
+                        this.ctx.restore();
+                    }
+                    
                     this.ctx.restore();
                 }
             }
@@ -2538,12 +2690,13 @@
                         await this.rasterizeLogoBitmap();
                         const logoWidth = 200;
                         const logoHeight = logoWidth / (this.logoAspectRatio || 1);
-                        this.logo = { x: 0, y: 0, width: logoWidth, height: logoHeight, opacity: 1 };
+                        this.logo = { x: 0, y: 0, width: logoWidth, height: logoHeight, opacity: 1, color: this.logoColor };
                         // Show controls now that logo is ready
                         this.removeLogoBtn.style.display = 'block';
                         this.centerLogoBtn.style.display = 'block';
                         this.logoSizeControl.style.display = 'block';
                         this.logoOpacityControl.style.display = 'block';
+                        this.logoColorControl.style.display = 'block';
                         if (this.logoSizeSlider && this.logoSizeValue) {
                             this.logoSizeSlider.value = logoWidth;
                             this.logoSizeValue.textContent = logoWidth;
@@ -2552,15 +2705,19 @@
                             this.logoOpacitySlider.value = 100;
                             this.logoOpacityValue.textContent = '100%';
                         }
+                        if (this.logoColorPicker && this.logoColorValue) {
+                            this.logoColorPicker.value = this.logoColor;
+                            this.logoColorValue.textContent = this.logoColor.toUpperCase();
+                        }
                         this.centerLogo();
                     };
                     this.logoImage.onerror = (error) => {
                         console.error('Failed to load logo image:', error);
                         console.log('Trying to load logo from:', this.logoImage.src);
-                        alert('Failed to load logo. Please check if corelogo.svg exists in the same folder.');
+                        alert('Failed to load logo. Please check if newcorelogo.svg exists in the same folder.');
                     };
                     // Load SVG as same-origin data URL to avoid any cross-origin taint
-                    fetch('/dashboard/corelogo.svg')
+                    fetch('/dashboard/newcorelogo.svg')
                         .then(resp => resp.ok ? resp.text() : Promise.reject(new Error('HTTP ' + resp.status)))
                         .then(svgText => {
                             const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText);
@@ -2568,7 +2725,7 @@
                         })
                         .catch(() => {
                             // Fallback to direct path if fetch fails (e.g., older environments)
-                            this.logoImage.src = '/dashboard/corelogo.svg';
+                            this.logoImage.src = '/dashboard/newcorelogo.svg';
                         });
                 } else {
                     // If already instantiated image and possibly cached
@@ -2577,11 +2734,12 @@
                         await this.rasterizeLogoBitmap();
                         const logoWidth = 200;
                         const logoHeight = logoWidth / (this.logoAspectRatio || 1);
-                        this.logo = { x: 0, y: 0, width: logoWidth, height: logoHeight, opacity: 1 };
+                        this.logo = { x: 0, y: 0, width: logoWidth, height: logoHeight, opacity: 1, color: this.logoColor };
                         this.removeLogoBtn.style.display = 'block';
                         this.centerLogoBtn.style.display = 'block';
                         this.logoSizeControl.style.display = 'block';
                         this.logoOpacityControl.style.display = 'block';
+                        this.logoColorControl.style.display = 'block';
                         if (this.logoSizeSlider && this.logoSizeValue) {
                             this.logoSizeSlider.value = logoWidth;
                             this.logoSizeValue.textContent = logoWidth;
@@ -2590,6 +2748,10 @@
                             this.logoOpacitySlider.value = 100;
                             this.logoOpacityValue.textContent = '100%';
                         }
+                        if (this.logoColorPicker && this.logoColorValue) {
+                            this.logoColorPicker.value = this.logoColor;
+                            this.logoColorValue.textContent = this.logoColor.toUpperCase();
+                        }
                         this.centerLogo();
                     }
                 }
@@ -2597,10 +2759,12 @@
             
             removeLogo() {
                 this.logo = null;
+                this.logoSubject = null;
                 this.removeLogoBtn.style.display = 'none';
                 this.centerLogoBtn.style.display = 'none';
                 this.logoSizeControl.style.display = 'none';
                 this.logoOpacityControl.style.display = 'none';
+                this.logoColorControl.style.display = 'none';
                 this.render();
             }
             
@@ -2840,14 +3004,14 @@
                         this.logoImage.onerror = () => resolve();
                         
                         // Load SVG as data URL to avoid CORS
-                        fetch('/dashboard/corelogo.svg')
+                        fetch('/dashboard/newcorelogo.svg')
                             .then(resp => resp.text())
                             .then(svgText => {
                                 const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText);
                                 this.logoImage.src = dataUrl;
                             })
                             .catch(() => {
-                                this.logoImage.src = '/dashboard/corelogo.svg';
+                                this.logoImage.src = '/dashboard/newcorelogo.svg';
                             });
                     } else {
                         resolve();
@@ -3124,10 +3288,13 @@
                 this.currentMedia = null;
                 this.mediaType = null;
                 this.logo = null;
+                this.logoSubject = null;
                 this.selectedCoreStyle = null;
                 
                 // Reset core style selection
                 document.querySelectorAll('.core-style-card').forEach(c => c.classList.remove('selected'));
+                // Reset subject selection
+                document.querySelectorAll('.subject-btn').forEach(btn => btn.classList.remove('selected'));
                 
                 this.uploadPlaceholder.style.display = 'flex';
                 this.canvas.style.display = 'none';
@@ -3143,6 +3310,7 @@
                 if (this.centerLogoBtn) this.centerLogoBtn.style.display = 'none';
                 if (this.logoSizeControl) this.logoSizeControl.style.display = 'none';
                 if (this.logoOpacityControl) this.logoOpacityControl.style.display = 'none';
+                if (this.logoColorControl) this.logoColorControl.style.display = 'none';
                 
                 this.ctx.clearRect(0, 0, this.canvasDisplayWidth, this.canvasDisplayHeight);
             }
