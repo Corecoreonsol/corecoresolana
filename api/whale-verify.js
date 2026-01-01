@@ -1,8 +1,8 @@
-// Vercel serverless function for whale-verify API
 const crypto = require('crypto');
 const nacl = require('tweetnacl');
 const bs58 = require('bs58');
 const { Connection, PublicKey } = require('@solana/web3.js');
+const { sql } = require('@vercel/postgres');
 
 // Environment variables
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -10,11 +10,42 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 const SOLANA_RPC_URL = process.env.SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com';
 const TOKEN_MINT = '4FdojUmXeaFMBG6yUaoufAC5Bz7u9AwnSAMizkx5pump';
 const MIN_TOKEN_AMOUNT = 10_000_000;
-const NONCE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+const NONCE_EXPIRY = 5 * 60 * 1000;
 
-// In-memory storage (for serverless, you'd want to use Redis or similar)
+// In-memory nonce storage (nonces are temporary by nature)
 const nonces = new Map();
-const verifiedWallets = new Set();
+
+// Database initialization
+async function initDatabase() {
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS verifications (
+        id SERIAL PRIMARY KEY,
+        wallet_address TEXT UNIQUE NOT NULL,
+        invite_link TEXT,
+        telegram_user_id TEXT,
+        telegram_username TEXT,
+        telegram_first_name TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        expires_at TIMESTAMP,
+        used BOOLEAN DEFAULT FALSE,
+        ip_address TEXT,
+        user_agent TEXT,
+        joined_at TIMESTAMP
+      )
+    `;
+    
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_wallet ON verifications(wallet_address)
+    `;
+    
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_telegram_user ON verifications(telegram_user_id)
+    `;
+  } catch (error) {
+    console.error('Database initialization error:', error);
+  }
+}
 
 // Helper functions
 const generateNonce = () => crypto.randomBytes(32).toString('hex');
@@ -61,7 +92,7 @@ const createTelegramInviteLink = async () => {
       body: JSON.stringify({
         chat_id: TELEGRAM_CHAT_ID,
         member_limit: 1,
-        expire_date: Math.floor(Date.now() / 1000) + 600 // 10 minutes
+        expire_date: Math.floor(Date.now() / 1000) + 600
       })
     });
 
@@ -77,18 +108,50 @@ const createTelegramInviteLink = async () => {
   }
 };
 
+// Check if wallet already verified
+async function hasWalletBeenVerified(walletAddress) {
+  try {
+    const result = await sql`
+      SELECT id FROM verifications WHERE wallet_address = ${walletAddress}
+    `;
+    return result.rows.length > 0;
+  } catch (error) {
+    console.error('Database check error:', error);
+    return false;
+  }
+}
+
+// Save verification to database
+async function saveVerification(walletAddress, inviteLink, ipAddress, userAgent) {
+  try {
+    const expiresAt = new Date(Date.now() + 600000); // 10 minutes
+    
+    await sql`
+      INSERT INTO verifications (wallet_address, invite_link, expires_at, ip_address, user_agent)
+      VALUES (${walletAddress}, ${inviteLink}, ${expiresAt}, ${ipAddress}, ${userAgent})
+    `;
+  } catch (error) {
+    console.error('Database save error:', error);
+    throw error;
+  }
+}
+
 // Main handler
 module.exports = async (req, res) => {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
   try {
+    // Initialize database on first request
+    await initDatabase();
+
     const url = new URL(req.url, `http://${req.headers.host}`);
     const path = url.pathname.replace('/api/whale-verify', '');
 
@@ -119,8 +182,9 @@ module.exports = async (req, res) => {
         });
       }
 
-      // Check if wallet already verified (in memory only - resets on cold start)
-      if (verifiedWallets.has(walletAddress)) {
+      // Check if wallet already verified in database
+      const alreadyVerified = await hasWalletBeenVerified(walletAddress);
+      if (alreadyVerified) {
         return res.status(400).json({ 
           success: false, 
           error: 'This wallet has already been verified' 
@@ -168,14 +232,45 @@ module.exports = async (req, res) => {
       // Create Telegram invite link
       const inviteLink = await createTelegramInviteLink();
 
-      // Add to verified wallets (in memory)
-      verifiedWallets.add(walletAddress);
+      // Get IP and User Agent
+      const ipAddress = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'unknown';
+      const userAgent = req.headers['user-agent'] || 'unknown';
+
+      // Save to database
+      await saveVerification(walletAddress, inviteLink, ipAddress, userAgent);
 
       return res.status(200).json({ 
         success: true, 
         inviteLink,
         balance: balance.toLocaleString()
       });
+    }
+
+    // Route: GET /stats
+    if (path === '/stats' && req.method === 'GET') {
+      try {
+        const result = await sql`
+          SELECT 
+            COUNT(*) as total,
+            COUNT(CASE WHEN joined_at IS NOT NULL THEN 1 END) as joined,
+            COUNT(CASE WHEN joined_at IS NULL AND expires_at > NOW() THEN 1 END) as pending
+          FROM verifications
+        `;
+        
+        const stats = result.rows[0];
+        
+        return res.status(200).json({
+          success: true,
+          stats: {
+            total: parseInt(stats.total),
+            joined: parseInt(stats.joined),
+            pending: parseInt(stats.pending)
+          }
+        });
+      } catch (error) {
+        console.error('Stats error:', error);
+        return res.status(500).json({ success: false, error: 'Failed to get stats' });
+      }
     }
 
     // Route not found
