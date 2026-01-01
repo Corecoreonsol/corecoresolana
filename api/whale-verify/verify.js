@@ -45,10 +45,20 @@ async function initDatabase() {
 // Verify signature
 const verifySignature = (message, signature, publicKey) => {
   try {
+    console.log('Verifying signature:', {
+      messageLength: message.length,
+      signatureLength: signature.length,
+      publicKeyLength: publicKey.length
+    });
+    
     const messageBytes = new TextEncoder().encode(message);
     const signatureBytes = bs58.decode(signature);
-    const publicKeyBytes = bs58.decode(publicKey);
-    return nacl.sign.detached.verify(messageBytes, signatureBytes, publicKeyBytes);
+    const publicKeyBytes = new PublicKey(publicKey).toBytes();
+    
+    const isValid = nacl.sign.detached.verify(messageBytes, signatureBytes, publicKeyBytes);
+    console.log('Signature verification result:', isValid);
+    
+    return isValid;
   } catch (error) {
     console.error('Signature verification error:', error);
     return false;
