@@ -2500,21 +2500,28 @@
                     
                     const srcImg = this.logoBitmap || this.logoImage;
                     
-                    // Apply color tint using fast composite operations instead of pixel manipulation
+                    // Apply color tint using temporary canvas to avoid affecting background
                     if (this.logo.color && this.logo.color !== '#00FFFF') {
-                        // Draw logo first
-                        this.ctx.drawImage(srcImg, this.logo.x, this.logo.y, this.logo.width, this.logo.height);
+                        // Create temporary canvas for colored logo
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = this.logo.width;
+                        tempCanvas.height = this.logo.height;
+                        const tempCtx = tempCanvas.getContext('2d');
                         
-                        // Apply color overlay using blend mode (MUCH faster than pixel processing)
-                        this.ctx.globalCompositeOperation = 'multiply';
-                        this.ctx.fillStyle = this.logo.color;
-                        this.ctx.fillRect(this.logo.x, this.logo.y, this.logo.width, this.logo.height);
+                        // Draw logo to temp canvas
+                        tempCtx.drawImage(srcImg, 0, 0, this.logo.width, this.logo.height);
+                        
+                        // Apply color overlay using blend mode
+                        tempCtx.globalCompositeOperation = 'multiply';
+                        tempCtx.fillStyle = this.logo.color;
+                        tempCtx.fillRect(0, 0, this.logo.width, this.logo.height);
                         
                         // Restore alpha channel
-                        this.ctx.globalCompositeOperation = 'destination-in';
-                        this.ctx.drawImage(srcImg, this.logo.x, this.logo.y, this.logo.width, this.logo.height);
+                        tempCtx.globalCompositeOperation = 'destination-in';
+                        tempCtx.drawImage(srcImg, 0, 0, this.logo.width, this.logo.height);
                         
-                        this.ctx.globalCompositeOperation = 'source-over';
+                        // Draw colored logo to main canvas
+                        this.ctx.drawImage(tempCanvas, this.logo.x, this.logo.y);
                     } else {
                         // No color, just draw normally
                         this.ctx.drawImage(srcImg, this.logo.x, this.logo.y, this.logo.width, this.logo.height);
